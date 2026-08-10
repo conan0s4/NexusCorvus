@@ -1,0 +1,196 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 216px;
+  height: 100vh;
+
+  box-sizing: border-box;
+
+  background: #1d2127;
+  border-right: 1px solid #1d2127;
+
+  color: #718096;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  display: flex;
+  flex-direction: column;
+
+  z-index: 1000;
+}
+
+/* Brand */
+
+.sidebar-brand {
+  height: 72px;
+
+  padding: 0 14px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  border-bottom: 1px solid #24282e;
+}
+
+.sidebar-logo {
+  width: 26px;
+  height: 26px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #4d86ad;
+  border-radius: 3px;
+
+  overflow: hidden;
+}
+
+.sidebar-logo img {
+  width: 20px;
+  height: 20px;
+}
+
+.brand-text {
+  margin-left: 9px;
+}
+
+.brand-name {
+  color: #e2e8ee;
+
+  font-size: 20px;
+  font-weight: 600;
+
+  line-height: 14px;
+}
+
+.brand-subtitle {
+  margin-top: 4px;
+
+  color: #4b6480;
+
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  line-height: 10px;
+
+  letter-spacing: 1.2px;
+}
+
+/* Navigation */
+
+.sidebar-nav {
+  padding: 10px 9px;
+}
+
+.sidebar-item {
+  height: 35px;
+
+  margin-bottom: 2px;
+
+  padding: 0 10px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  border-radius: 3px;
+
+  color: #526176;
+
+  text-decoration: none;
+
+  font-size: 13px;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.sidebar-item img {
+  width: 16px;
+  height: 16px;
+
+  color: currentColor;
+}
+
+.sidebar-item:hover {
+  background: #171d25;
+  color: #7796b1;
+}
+
+.sidebar-item.active {
+  background: #3c4b5d;
+  color: #4d9bd0;
+}
+
+.sidebar-divider {
+  height: 1px;
+
+  margin: 9px 4px;
+
+  background: #24282e;
+}
+
+/* User */
+
+.sidebar-user {
+  margin-top: auto;
+
+  min-height: 65px;
+
+  padding: 0 18px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  border-top: 1px solid #24282e;
+}
+
+.user-avatar {
+  width: 24px;
+  height: 24px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #16202a;
+  border: 1px solid #294052;
+  border-radius: 3px;
+
+  color: #4d9bd0;
+
+  font-family: "Courier New", monospace;
+  font-size: 8px;
+}
+
+.user-info {
+  margin-left: 9px;
+}
+
+.user-name {
+  color: #c1cad4;
+
+  font-size: 12px;
+}
+
+.user-role {
+  margin-top: 3px;
+
+  color: #39495a;
+
+  font-size: 9px;
+}

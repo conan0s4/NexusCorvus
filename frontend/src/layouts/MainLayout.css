@@ -1,0 +1,11 @@
+.app-layout {
+  min-height: 100vh;
+  background: #101114;
+}
+
+.app-content {
+  margin-left: 216px;
+  width: calc(100% - 216px);
+  min-height: 100vh;
+  box-sizing: border-box;
+}

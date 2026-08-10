@@ -1,0 +1,405 @@
+.sigma-page {
+  min-height: 100vh;
+  width: 100%;
+  box-sizing: border-box;
+
+  background: #101114;
+  color: #e8edf2;
+}
+
+
+/* Header */
+
+.sigma-header {
+  height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 20px 0 28px;
+
+  box-sizing: border-box;
+
+  border-bottom: 1px solid #24282e;
+}
+
+.sigma-header h1 {
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.sigma-header p {
+  margin: 2px 0 0;
+
+  color: #3f536a;
+
+  font-size: 11px;
+}
+
+
+/* Header Navigation */
+
+.analysis-actions {
+  display: flex;
+
+  border: 1px solid #292e35;
+  border-radius: 4px;
+
+  overflow: hidden;
+}
+
+.analysis-button {
+  height: 32px;
+
+  padding: 0 14px;
+
+  border: none;
+
+  background: #15181d;
+
+  color: #53667b;
+
+  font-size: 10px;
+
+  cursor: pointer;
+}
+
+.analysis-button:hover {
+  color: #a0adba;
+}
+
+.analysis-button.active {
+  background: #4d86ad;
+  color: white;
+}
+
+
+/* Main Content */
+
+.sigma-content {
+  padding: 24px 28px;
+}
+
+.sigma-section {
+  margin-bottom: 24px;
+}
+
+.sigma-section-label {
+  margin-bottom: 12px;
+
+  color: #3d5269;
+
+  font-family: "Courier New", monospace;
+
+  font-size: 8px;
+
+  letter-spacing: 1px;
+}
+
+
+/* Upload */
+
+.sigma-upload-area {
+  height: 142px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  border: 2px dashed #272d34;
+}
+
+.sigma-upload-icon {
+  margin-bottom: 10px;
+
+  color: #35465a;
+
+  font-size: 22px;
+}
+
+.sigma-upload-text {
+  color: #50657c;
+
+  font-size: 12px;
+}
+
+.sigma-upload-formats {
+  margin-top: 8px;
+
+  color: #36485d;
+
+  font-family: "Courier New", monospace;
+
+  font-size: 9px;
+}
+
+
+/* Files */
+
+.sigma-files {
+  border: 1px solid #252a30;
+  border-top: none;
+}
+
+
+/* Detection Engine */
+
+.sigma-detection-panel {
+  min-height: 70px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  box-sizing: border-box;
+
+  padding: 0 14px;
+
+  border: 1px solid #252a30;
+}
+
+.sigma-detection-description {
+  color: #40546a;
+
+  font-size: 10px;
+}
+
+.sigma-run-button {
+  height: 30px;
+
+  padding: 0 14px;
+
+  border: none;
+  border-radius: 3px;
+
+  background: #4d86ad;
+
+  color: white;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.sigma-run-button:hover {
+  background: #5791b9;
+}
+
+
+/* Save */
+
+.sigma-save-section {
+  display: flex;
+  justify-content: flex-end;
+
+  margin-top: 10px;
+}
+
+.sigma-save-button {
+  height: 34px;
+
+  padding: 0 16px;
+
+  border: 1px solid #3d6d8d;
+  border-radius: 3px;
+
+  background: #4d86ad;
+
+  color: white;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.sigma-save-button:hover {
+  background: #5791b9;
+}
+
+
+/* Modal */
+
+.sigma-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.65);
+
+  z-index: 1000;
+}
+
+.sigma-modal {
+  width: 400px;
+
+  box-sizing: border-box;
+
+  padding: 20px;
+
+  border: 1px solid #30353d;
+  border-radius: 4px;
+
+  background: #15181d;
+
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+
+/* Modal Header */
+
+.sigma-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+
+  margin-bottom: 22px;
+}
+
+.sigma-modal-header h2 {
+  margin: 0;
+
+  color: #e3e8ed;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sigma-modal-header p {
+  margin: 6px 0 0;
+
+  color: #4c6075;
+
+  font-size: 10px;
+}
+
+.sigma-modal-close {
+  padding: 0;
+
+  border: none;
+
+  background: transparent;
+
+  color: #596a7c;
+
+  font-size: 20px;
+
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.sigma-modal-close:hover {
+  color: #aab7c3;
+}
+
+
+/* Form */
+
+.sigma-form-group label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #53667b;
+
+  font-family: "Courier New", monospace;
+
+  font-size: 8px;
+
+  letter-spacing: 1px;
+}
+
+.sigma-form-group input {
+  width: 100%;
+  height: 36px;
+
+  box-sizing: border-box;
+
+  padding: 0 10px;
+
+  border: 1px solid #30343a;
+  border-radius: 3px;
+
+  background: #191c20;
+
+  color: #dce3e9;
+
+  font-size: 11px;
+
+  outline: none;
+}
+
+.sigma-form-group input::placeholder {
+  color: #3c4a59;
+}
+
+.sigma-form-group input:focus {
+  border-color: #4d86ad;
+}
+
+
+/* Modal Buttons */
+
+.sigma-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  margin-top: 22px;
+  padding-top: 15px;
+
+  border-top: 1px solid #292e35;
+}
+
+.sigma-cancel-button,
+.sigma-confirm-button {
+  height: 31px;
+
+  padding: 0 13px;
+
+  border-radius: 3px;
+
+  font-size: 10px;
+
+  cursor: pointer;
+}
+
+.sigma-cancel-button {
+  border: 1px solid #303640;
+
+  background: #191d22;
+
+  color: #65758a;
+}
+
+.sigma-cancel-button:hover {
+  color: #a0adba;
+}
+
+.sigma-confirm-button {
+  border: 1px solid #3d6d8d;
+
+  background: #4d86ad;
+
+  color: white;
+
+  font-weight: 600;
+}
+
+.sigma-confirm-button:hover {
+  background: #5791b9;
+}
