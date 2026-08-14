@@ -1,15 +1,97 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./Cases.css";
+import { getCases, createCase } from "../../api/caseApi";
 
 function Cases() {
+  const [cases, setCases] = useState([]);
   const [showCreateCase, setShowCreateCase] = useState(false);
 
-  const handleCreateCase = (e) => {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const [caseName, setCaseName] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("Open");
+
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    loadCases();
+  }, []);
+
+  const loadCases = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const result = await getCases();
+
+      const caseList = Array.isArray(result)
+        ? result
+        : result.results || [];
+
+      setCases(caseList);
+    } catch (error) {
+      setError(error.message || "Failed to load cases.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateCase = async (e) => {
     e.preventDefault();
 
-    // Django API connection will be added later.
-    console.log("Create case");
+    if (!caseName.trim()) {
+      setError("Case name is required.");
+      return;
+    }
+
+    try {
+      setCreating(true);
+      setError("");
+
+      const newCase = await createCase({
+        case_name: caseName,
+        description,
+        status,
+      });
+
+      setCases((currentCases) => [
+        newCase,
+        ...currentCases,
+      ]);
+
+      setCaseName("");
+      setDescription("");
+      setStatus("Open");
+      setShowCreateCase(false);
+    } catch (error) {
+      setError(error.message || "Failed to create case.");
+    } finally {
+      setCreating(false);
+    }
   };
+
+  const filteredCases = cases.filter((caseItem) => {
+    const searchValue = search.toLowerCase();
+
+    const matchesSearch =
+      caseItem.case_name
+        ?.toLowerCase()
+        .includes(searchValue) ||
+      String(caseItem.id)
+        .toLowerCase()
+        .includes(searchValue);
+
+    const matchesStatus =
+      statusFilter === "All" ||
+      caseItem.status?.toLowerCase() ===
+        statusFilter.toLowerCase();
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="cases-page">
@@ -23,12 +105,22 @@ function Cases() {
 
         <button
           className="new-case-button"
-          onClick={() => setShowCreateCase(true)}
+          onClick={() => {
+            setError("");
+            setShowCreateCase(true);
+          }}
         >
           <span>+</span>
           New Case
         </button>
       </header>
+
+      {/* Error */}
+      {error && (
+        <div className="cases-error">
+          {error}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="cases-toolbar">
@@ -39,29 +131,61 @@ function Cases() {
           <input
             type="text"
             placeholder="Search cases..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
         <div className="filter-group">
-          <button className="filter active">All</button>
-          <button className="filter">Investigating</button>
-          <button className="filter">Open</button>
-          <button className="filter">Reviewing</button>
-          <button className="filter">Closed</button>
-        </div>
+          <button
+            className={`filter ${
+              statusFilter === "All" ? "active" : ""
+            }`}
+            onClick={() => setStatusFilter("All")}
+          >
+            All
+          </button>
 
-        <div className="filter-divider" />
+          <button
+            className={`filter ${
+              statusFilter === "Investigating" ? "active" : ""
+            }`}
+            onClick={() => setStatusFilter("Investigating")}
+          >
+            Investigating
+          </button>
 
-        <div className="filter-group">
-          <button className="filter active">All</button>
-          <button className="filter">Critical</button>
-          <button className="filter">High</button>
-          <button className="filter">Medium</button>
-          <button className="filter">Low</button>
+          <button
+            className={`filter ${
+              statusFilter === "Open" ? "active" : ""
+            }`}
+            onClick={() => setStatusFilter("Open")}
+          >
+            Open
+          </button>
+
+          <button
+            className={`filter ${
+              statusFilter === "Reviewing" ? "active" : ""
+            }`}
+            onClick={() => setStatusFilter("Reviewing")}
+          >
+            Reviewing
+          </button>
+
+          <button
+            className={`filter ${
+              statusFilter === "Closed" ? "active" : ""
+            }`}
+            onClick={() => setStatusFilter("Closed")}
+          >
+            Closed
+          </button>
         </div>
 
         <div className="case-count">
-          0 cases
+          {filteredCases.length}{" "}
+          {filteredCases.length === 1 ? "case" : "cases"}
         </div>
 
       </div>
@@ -72,16 +196,57 @@ function Cases() {
         <div className="table-header">
           <div>CASE ID</div>
           <div>CASE NAME</div>
-          <div>SEVERITY</div>
-          <div>EVENTS</div>
-          <div>LAST ACTIVITY</div>
           <div>STATUS</div>
+          <div>CREATED</div>
           <div>UPDATED</div>
         </div>
 
-        <div className="cases-empty">
-          <p>No cases found</p>
-        </div>
+        {loading ? (
+          <div className="cases-empty">
+            <p>Loading cases...</p>
+          </div>
+        ) : filteredCases.length === 0 ? (
+          <div className="cases-empty">
+            <p>No cases found</p>
+          </div>
+        ) : (
+          filteredCases.map((caseItem) => (
+            <div
+              className="case-row"
+              key={caseItem.id}
+            >
+              <div className="case-id-cell">
+                CASE-{caseItem.id}
+              </div>
+
+              <div className="case-name-cell">
+                {caseItem.case_name}
+              </div>
+
+              <div>
+                <span className="case-status">
+                  {caseItem.status}
+                </span>
+              </div>
+
+              <div className="case-date">
+                {caseItem.created_at
+                  ? new Date(
+                      caseItem.created_at
+                    ).toLocaleString()
+                  : "-"}
+              </div>
+
+              <div className="case-date">
+                {caseItem.updated_at
+                  ? new Date(
+                      caseItem.updated_at
+                    ).toLocaleString()
+                  : "-"}
+              </div>
+            </div>
+          ))
+        )}
 
       </div>
 
@@ -123,6 +288,10 @@ function Cases() {
                     id="case-name"
                     type="text"
                     placeholder="Suspicious PowerShell Activity"
+                    value={caseName}
+                    onChange={(e) =>
+                      setCaseName(e.target.value)
+                    }
                   />
                 </div>
 
@@ -135,61 +304,42 @@ function Cases() {
                   <textarea
                     id="case-description"
                     placeholder="Brief description of the incident..."
+                    value={description}
+                    onChange={(e) =>
+                      setDescription(e.target.value)
+                    }
                   />
                 </div>
 
-                {/* Severity */}
+                {/* Status */}
                 <div className="modal-form-group">
-                  <label>SEVERITY</label>
-
-                  <div className="severity-options">
-
-                    <button
-                      type="button"
-                      className="severity-option"
-                    >
-                      Critical
-                    </button>
-
-                    <button
-                      type="button"
-                      className="severity-option"
-                    >
-                      High
-                    </button>
-
-                    <button
-                      type="button"
-                      className="severity-option selected"
-                    >
-                      Medium
-                    </button>
-
-                    <button
-                      type="button"
-                      className="severity-option"
-                    >
-                      Low
-                    </button>
-
-                  </div>
-                </div>
-
-                {/* Tags */}
-                <div className="modal-form-group">
-                  <label htmlFor="case-tags">
-                    TAGS
+                  <label htmlFor="case-status">
+                    STATUS
                   </label>
 
-                  <input
-                    id="case-tags"
-                    type="text"
-                    placeholder="powershell, lateral-movement, endpoint"
-                  />
+                  <select
+                    id="case-status"
+                    value={status}
+                    onChange={(e) =>
+                      setStatus(e.target.value)
+                    }
+                  >
+                    <option value="Investigating">
+                      Investigating
+                    </option>
 
-                  <span className="field-hint">
-                    Comma-separated
-                  </span>
+                    <option value="Open">
+                      Open
+                    </option>
+
+                    <option value="Reviewing">
+                      Reviewing
+                    </option>
+
+                    <option value="Closed">
+                      Closed
+                    </option>
+                  </select>
                 </div>
 
               </div>
@@ -208,8 +358,11 @@ function Cases() {
                 <button
                   type="submit"
                   className="create-button"
+                  disabled={creating}
                 >
-                  Create Case
+                  {creating
+                    ? "Creating..."
+                    : "Create Case"}
                 </button>
 
               </div>

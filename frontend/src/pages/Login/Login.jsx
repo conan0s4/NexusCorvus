@@ -1,10 +1,30 @@
+import { useState } from "react";
 import "./Login.css";
 import shieldLogo from "../../assets/shield.svg";
+import { login } from "../../api/authApi";
 
 function Login() {
-  const handleSubmit = (e) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Authentication will be connected to Django later.
+
+    setError("");
+    setLoading(true);
+
+    try {
+      await login(username, password);
+
+      // Authentication succeeded.
+      // Navigation and authentication state will be added later.
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,6 +55,8 @@ function Login() {
               type="text"
               placeholder="analyst@corp.local"
               autoComplete="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
 
@@ -48,11 +70,19 @@ function Login() {
               type="password"
               placeholder="••••••••••••"
               autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
-          <button type="submit">
-            Sign In
+          {error && (
+            <p className="login-error">
+              {error}
+            </p>
+          )}
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Signing In..." : "Sign In"}
           </button>
 
         </form>
@@ -62,7 +92,7 @@ function Login() {
           <p>Authorized personnel only</p>
           <p>security specialist | “Flow state is where hesitation disappears—only steady intent remains, quiet enough to hear your own precision.”</p>
           <br></br>
-          <p>By Alexander <Sapo></Sapo></p>
+          <p>By Alexander</p>
         </div>
 
       </div>

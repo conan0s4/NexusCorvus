@@ -2,61 +2,64 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="087c62c6-337b-47f8-b757-588962c1317b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/NexusCorvus.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/Sidebar/Sidebar.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/Sidebar/Sidebar.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/layouts/MainLayout.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/layouts/MainLayout.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/LogAnalysis/LogAnalysis.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/LogAnalysis/LogAnalysis.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/Login/Login.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/Login/Login.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/api/apiclient.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/api/authApi.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/api/caseApi.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/api/detectionApi.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/api/eventApi.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/api/evidenceApi.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/frontend/src/api/noteApi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Login/Login.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Login/Login.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="ProjectErrors" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1,
   &quot;fromUser&quot;: false
 }</component>
   <component name="ProjectId" id="3HciCjX6m5KKsZXpE9mChdRCjuD" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "nodejs_package_manager_path": "npm",
-    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\PyCharm 2026.1.4\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\PyCharm 2026.1.4\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\alexa\PycharmProjects\NexusCorvus\frontend\src\pages\Cases" />
