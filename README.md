@@ -18,6 +18,7 @@
 - [x] test  API backend
 - [ ] Implement frontend API client & data fetching
 - [ ] test  API frontend
+- [ ] Implement Django's built-in session authentication + HTTP cookie
 - [ ] Integrate Chainsaw forensic log analysis engine
 - [ ] Implement Sigma detection rule engine
 - [ ] security implementation
