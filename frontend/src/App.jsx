@@ -6,12 +6,14 @@ import {
 
 import Login from "./pages/Login/Login";
 import MainLayout from "./layouts/MainLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 import Cases from "./pages/Cases/Cases";
 import LogAnalysis from "./pages/LogAnalysis/LogAnalysis";
 import SigmaDetection from "./pages/SigmaDetection/SigmaDetection";
 import CaseDetail from "./pages/Cases/CaseDetail/CaseDetail";
-
-
+import Settings from "./pages/Settings/Settings.jsx";
+import Landing from "./pages/Landing/Landing";
 
 function App() {
   return (
@@ -19,39 +21,46 @@ function App() {
 
       <Routes>
 
-        {/* No Sidebar */}
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<Landing />} />
 
-        {/* Sidebar */}
-        <Route element={<MainLayout />}>
+        {/* PUBLIC */}
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
-          <Route
-            path="/cases"
-            element={<Cases />}
-          />
+        {/* AUTHENTICATED USERS ONLY */}
+        <Route element={<ProtectedRoute />}>
 
+          {/* Sidebar */}
+          <Route element={<MainLayout />}>
 
-          <Route
-            path="/log-analysis"
-            element={<LogAnalysis />}
-          />
+            <Route
+              path="/cases"
+              element={<Cases />}
+            />
 
-          <Route
-            path="/sigma-detection"
-            element={<SigmaDetection />}
-          />
+            <Route
+              path="/log-analysis"
+              element={<LogAnalysis />}
+            />
 
-          <Route
-          path="/cases/case-detail"
-          element={<CaseDetail />}
-          />
+            <Route
+              path="/sigma-detection"
+              element={<SigmaDetection />}
+            />
 
-
+            <Route
+              path="/cases/:caseId"
+              element={<CaseDetail />}
+            />
+            <Route
+              path="/Settings"
+              element={<Settings />}
+            />
+          </Route>
 
         </Route>
-
-
-
 
       </Routes>
 

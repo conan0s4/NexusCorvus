@@ -2,12 +2,17 @@ import { useState } from "react";
 import "./Login.css";
 import shieldLogo from "../../assets/shield.svg";
 import { login } from "../../api/authApi";
+import { useNavigate } from "react-router-dom";
+
 
 function Login() {
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,8 +23,8 @@ function Login() {
     try {
       await login(username, password);
 
-      // Authentication succeeded.
-      // Navigation and authentication state will be added later.
+      navigate("/cases");
+
     } catch (error) {
       setError(error.message);
     } finally {

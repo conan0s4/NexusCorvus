@@ -32,7 +32,10 @@ export async function updateProfile(profileData) {
 }
 
 // CHANGE PASSWORD
-export async function changePassword(currentPassword, newPassword) {
+export async function changePassword(
+    currentPassword,
+    newPassword
+) {
     return apiRequest("/auth/password/", {
         method: "POST",
         body: JSON.stringify({

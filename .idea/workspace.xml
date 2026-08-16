@@ -2,18 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="087c62c6-337b-47f8-b757-588962c1317b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/frontend/src/api/apiclient.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/api/authApi.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/api/caseApi.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/api/detectionApi.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/api/eventApi.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/api/evidenceApi.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/api/noteApi.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/config/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/config/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/apiclient.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/apiclient.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/authApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/authApi.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Sidebar/Sidebar.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Sidebar/Sidebar.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/components/Sidebar/Sidebar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Sidebar/Sidebar.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/pages/Login/Login.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Login/Login.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -32,7 +28,7 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="ProjectErrors" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1,

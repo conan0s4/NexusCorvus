@@ -177,20 +177,23 @@
   font-size: 8px;
 }
 
-.user-info {
-  margin-left: 9px;
+
+
+.logout-button {
+  margin-top: 330px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #4b6480;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s ease;
 }
 
-.user-name {
-  color: #c1cad4;
-
-  font-size: 12px;
-}
-
-.user-role {
-  margin-top: 3px;
-
-  color: #39495a;
-
-  font-size: 9px;
+.logout-button:hover {
+  background: #4b6480;
+  color: #222;
 }

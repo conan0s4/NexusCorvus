@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import "./CaseDetail.css";
@@ -40,6 +40,11 @@ function CaseDetail() {
   const [showEdit, setShowEdit] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const [selectedDetection, setSelectedDetection] = useState(null);
+
+  const [detectionSearch, setDetectionSearch] = useState("");
+  const [eventSearch, setEventSearch] = useState("");
+
   const [editForm, setEditForm] = useState({
     case_name: "",
     description: "",
@@ -50,13 +55,13 @@ function CaseDetail() {
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingNoteContent, setEditingNoteContent] = useState("");
 
+
   /*
-   * Convert API responses into arrays.
-   *
-   * This also works if Django later returns:
-   * { results: [...] }
-   * instead of directly returning [...]
+   * =========================================
+   * HELPERS
+   * =========================================
    */
+
   const extractList = (response) => {
     if (Array.isArray(response)) {
       return response;
@@ -69,12 +74,70 @@ function CaseDetail() {
     return [];
   };
 
+
+  const formatDate = (value) => {
+    if (!value) {
+      return "—";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    return date.toLocaleString();
+  };
+
+
+  const formatFileSize = (bytes) => {
+    if (
+      bytes === null ||
+      bytes === undefined ||
+      bytes === ""
+    ) {
+      return "—";
+    }
+
+    const size = Number(bytes);
+
+    if (Number.isNaN(size)) {
+      return String(bytes);
+    }
+
+    if (size < 1024) {
+      return `${size} B`;
+    }
+
+    if (size < 1024 * 1024) {
+      return `${(size / 1024).toFixed(1)} KB`;
+    }
+
+    if (size < 1024 * 1024 * 1024) {
+      return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+    }
+
+    return `${(size / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  };
+
+
+  const getSeverityClass = (severity) => {
+    return String(severity || "")
+      .trim()
+      .toLowerCase();
+  };
+
+
   /*
-   * Load all information required by this case page.
+   * =========================================
+   * LOAD CASE DATA
+   * =========================================
    */
+
   useEffect(() => {
     loadCaseData();
   }, [caseId]);
+
 
   const loadCaseData = async () => {
     try {
@@ -97,23 +160,22 @@ function CaseDetail() {
 
       setCaseData(currentCase);
 
-      /*
-       * Populate edit form using the actual case data.
-       */
       setEditForm({
         case_name: currentCase.case_name || "",
         description: currentCase.description || "",
         status: currentCase.status || "",
       });
 
-      /*
-       * The current APIs return all records.
-       * Therefore the frontend filters records belonging
-       * to the current case.
-       */
-      const detectionList = extractList(detectionsResponse);
-      const eventList = extractList(eventsResponse);
-      const noteList = extractList(notesResponse);
+
+      const detectionList =
+        extractList(detectionsResponse);
+
+      const eventList =
+        extractList(eventsResponse);
+
+      const noteList =
+        extractList(notesResponse);
+
 
       setDetections(
         detectionList.filter(
@@ -124,6 +186,7 @@ function CaseDetail() {
         )
       );
 
+
       setEvents(
         eventList.filter(
           (event) =>
@@ -132,6 +195,7 @@ function CaseDetail() {
             String(event.case?.id) === String(caseId)
         )
       );
+
 
       setNotes(
         noteList.filter(
@@ -144,7 +208,10 @@ function CaseDetail() {
 
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to fetch case data.");
+      setError(
+        err.message ||
+        "Failed to fetch case data."
+      );
     } finally {
       setLoading(false);
     }
@@ -152,8 +219,53 @@ function CaseDetail() {
 
 
   /*
-   * EDIT CASE
+   * =========================================
+   * SEARCH
+   * =========================================
    */
+
+  const filteredDetections = useMemo(() => {
+    const query =
+      detectionSearch.trim().toLowerCase();
+
+    if (!query) {
+      return detections;
+    }
+
+    return detections.filter((detection) => {
+      return Object.values(detection).some((value) =>
+        String(value ?? "")
+          .toLowerCase()
+          .includes(query)
+      );
+    });
+  }, [detections, detectionSearch]);
+
+
+  const filteredEvents = useMemo(() => {
+    const query =
+      eventSearch.trim().toLowerCase();
+
+    if (!query) {
+      return events;
+    }
+
+    return events.filter((event) => {
+      return Object.values(event).some((value) =>
+        String(value ?? "")
+          .toLowerCase()
+          .includes(query)
+      );
+    });
+  }, [events, eventSearch]);
+
+
+  /*
+   * =========================================
+   * CASE EDIT
+   * =========================================
+   */
+
   const handleEditChange = (e) => {
     const { name, value } = e.target;
 
@@ -163,43 +275,52 @@ function CaseDetail() {
     }));
   };
 
+
   const handleUpdateCase = async (e) => {
     e.preventDefault();
 
     try {
       setError("");
 
-      const updatedCase = await updateCase(caseId, {
-        case_name: editForm.case_name,
-        description: editForm.description,
-        status: editForm.status,
-      });
+      const updatedCase = await updateCase(
+        caseId,
+        {
+          case_name: editForm.case_name,
+          description: editForm.description,
+          status: editForm.status,
+        }
+      );
 
       setCaseData(updatedCase);
 
       setEditForm({
-        case_name: updatedCase.case_name || "",
-        description: updatedCase.description || "",
-        status: updatedCase.status || "",
+        case_name:
+          updatedCase.case_name || "",
+        description:
+          updatedCase.description || "",
+        status:
+          updatedCase.status || "",
       });
 
       setShowEdit(false);
 
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to update case.");
+
+      setError(
+        err.message ||
+        "Failed to update case."
+      );
     }
   };
 
 
   /*
+   * =========================================
    * DELETE CASE
-   *
-   * Django's Case ForeignKey relationships use
-   * on_delete=models.CASCADE, so deleting the Case
-   * also deletes its related Events, Detections,
-   * Notes and EvidenceFiles.
+   * =========================================
    */
+
   const handleDeleteCase = async () => {
     try {
       setError("");
@@ -210,14 +331,21 @@ function CaseDetail() {
 
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to delete case.");
+
+      setError(
+        err.message ||
+        "Failed to delete case."
+      );
     }
   };
 
 
   /*
-   * CREATE NOTE
+   * =========================================
+   * NOTES
+   * =========================================
    */
+
   const handleCreateNote = async (e) => {
     e.preventDefault();
 
@@ -242,32 +370,29 @@ function CaseDetail() {
 
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to create note.");
+
+      setError(
+        err.message ||
+        "Failed to create note."
+      );
     }
   };
 
 
-  /*
-   * START NOTE EDIT
-   */
   const startEditingNote = (note) => {
     setEditingNoteId(note.id);
-    setEditingNoteContent(note.content || "");
+    setEditingNoteContent(
+      note.content || ""
+    );
   };
 
 
-  /*
-   * CANCEL NOTE EDIT
-   */
   const cancelEditingNote = () => {
     setEditingNoteId(null);
     setEditingNoteContent("");
   };
 
 
-  /*
-   * UPDATE NOTE
-   */
   const handleUpdateNote = async (noteId) => {
     if (!editingNoteContent.trim()) {
       return;
@@ -276,13 +401,19 @@ function CaseDetail() {
     try {
       setError("");
 
-      const updatedNote = await updateNote(noteId, {
-        content: editingNoteContent.trim(),
-      });
+      const updatedNote = await updateNote(
+        noteId,
+        {
+          content:
+            editingNoteContent.trim(),
+        }
+      );
 
       setNotes((previous) =>
         previous.map((note) =>
-          note.id === noteId ? updatedNote : note
+          note.id === noteId
+            ? updatedNote
+            : note
         )
       );
 
@@ -290,14 +421,15 @@ function CaseDetail() {
 
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to update note.");
+
+      setError(
+        err.message ||
+        "Failed to update note."
+      );
     }
   };
 
 
-  /*
-   * DELETE NOTE
-   */
   const handleDeleteNote = async (noteId) => {
     try {
       setError("");
@@ -305,23 +437,38 @@ function CaseDetail() {
       await deleteNote(noteId);
 
       setNotes((previous) =>
-        previous.filter((note) => note.id !== noteId)
+        previous.filter(
+          (note) => note.id !== noteId
+        )
       );
 
     } catch (err) {
       console.error(err);
-      setError(err.message || "Failed to delete note.");
+
+      setError(
+        err.message ||
+        "Failed to delete note."
+      );
     }
   };
 
 
   /*
-   * Loading state
+   * =========================================
+   * LOADING
+   * =========================================
    */
+
   if (loading) {
     return (
       <div className="case-detail-page">
         <div className="case-loading">
+          <div className="loading-indicator">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
           Loading case...
         </div>
       </div>
@@ -329,9 +476,6 @@ function CaseDetail() {
   }
 
 
-  /*
-   * Case not found
-   */
   if (!caseData) {
     return (
       <div className="case-detail-page">
@@ -346,14 +490,29 @@ function CaseDetail() {
   return (
     <div className="case-detail-page">
 
-      {/* Header */}
+
+      {/* =========================================
+          HEADER
+          ========================================= */}
+
       <section className="case-top-section">
 
         <div className="case-breadcrumb">
-          Cases
-          <span>/</span>
-          Case Detail
+
+          <span className="breadcrumb-muted">
+            CASES
+          </span>
+
+          <span className="breadcrumb-separator">
+            /
+          </span>
+
+          <span>
+            CASE DETAIL
+          </span>
+
         </div>
+
 
         <div className="case-header">
 
@@ -362,7 +521,7 @@ function CaseDetail() {
             <div className="case-title-row">
 
               <span className="case-id">
-                #{caseData.id}
+                CASE-{String(caseData.id).padStart(3, "0")}
               </span>
 
               <span className="case-title-separator">
@@ -375,49 +534,82 @@ function CaseDetail() {
 
             </div>
 
+
             <div className="case-meta">
 
-              <span>
-                Status:
-                <strong className="case-status">
-                  {caseData.status}
-                </strong>
+              <span className="case-meta-item">
+
+                <span className="meta-label">
+                  STATUS
+                </span>
+
+                <span className="case-status">
+                  <span className="status-dot"></span>
+                  {caseData.status || "—"}
+                </span>
+
               </span>
 
-              <span>
-                Created:
-                {" "}
-                {caseData.created_at
-                  ? new Date(caseData.created_at).toLocaleString()
-                  : "—"}
+
+              <span className="case-meta-divider">
+                •
               </span>
 
-              <span>
-                Updated:
-                {" "}
-                {caseData.updated_at
-                  ? new Date(caseData.updated_at).toLocaleString()
-                  : "—"}
+
+              <span className="case-meta-item">
+
+                <span className="meta-label">
+                  CREATED
+                </span>
+
+                {formatDate(
+                  caseData.created_at
+                )}
+
+              </span>
+
+
+              <span className="case-meta-divider">
+                •
+              </span>
+
+
+              <span className="case-meta-item">
+
+                <span className="meta-label">
+                  UPDATED
+                </span>
+
+                {formatDate(
+                  caseData.updated_at
+                )}
+
               </span>
 
             </div>
 
           </div>
 
+
           <div className="case-header-actions">
 
             <button
               className="case-action-button"
-              onClick={() => setShowEdit(true)}
+              onClick={() =>
+                setShowEdit(true)
+              }
             >
-              Edit
+              EDIT
             </button>
+
 
             <button
               className="case-action-button delete-button"
-              onClick={() => setShowDeleteConfirm(true)}
+              onClick={() =>
+                setShowDeleteConfirm(true)
+              }
             >
-              Delete
+              DELETE
             </button>
 
           </div>
@@ -427,42 +619,278 @@ function CaseDetail() {
       </section>
 
 
-      {/* Main Content */}
+      {/* =========================================
+          MAIN CONTENT
+          ========================================= */}
+
       <main className="case-content-scrollable">
 
         {error && (
           <div className="case-error">
+            <span className="error-icon">
+              !
+            </span>
+
             {error}
           </div>
         )}
 
 
-        {/* Description */}
+        {/* =========================================
+            CASE OVERVIEW
+            ========================================= */}
+
         <section className="section-block">
 
-          <h2 className="section-header">
-            CASE DESCRIPTION
-          </h2>
+          <div className="section-heading-row">
 
-          <div className="description-box">
-            {caseData.description || "No description provided."}
+            <div className="section-title-group">
+
+              <div className="section-eyebrow">
+                INVESTIGATION
+              </div>
+
+              <h2 className="section-header">
+                CASE OVERVIEW
+              </h2>
+
+            </div>
+
+          </div>
+
+
+          <div className="overview-layout">
+
+            <div className="overview-main-card">
+
+              <div className="overview-label">
+                CASE DESCRIPTION
+              </div>
+
+              <div className="overview-description-text">
+                {caseData.description ||
+                  "No description provided for this investigation."}
+              </div>
+
+            </div>
+
+
+            <div className="overview-meta-grid">
+
+              <div className="overview-small-card">
+
+                <div className="overview-label">
+                  STATUS
+                </div>
+
+                <div className="overview-status-value">
+                  <span className="status-dot"></span>
+
+                  {caseData.status || "—"}
+                </div>
+
+              </div>
+
+
+              <div className="overview-small-card">
+
+                <div className="overview-label">
+                  CREATED
+                </div>
+
+                <div className="overview-value">
+                  {formatDate(
+                    caseData.created_at
+                  )}
+                </div>
+
+              </div>
+
+
+              <div className="overview-small-card">
+
+                <div className="overview-label">
+                  LAST UPDATED
+                </div>
+
+                <div className="overview-value">
+                  {formatDate(
+                    caseData.updated_at
+                  )}
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          {/* Investigation Statistics */}
+
+          <div className="investigation-stats">
+
+            <div className="investigation-stat">
+
+              <div className="stat-icon event-stat-icon">
+                EV
+              </div>
+
+              <div className="stat-content">
+
+                <span className="stat-label">
+                  EVENT FILES
+                </span>
+
+                <strong>
+                  {events.length}
+                </strong>
+
+                <span className="stat-description">
+                  Evidence records
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <div className="investigation-stat">
+
+              <div className="stat-icon detection-stat-icon">
+                DT
+              </div>
+
+              <div className="stat-content">
+
+                <span className="stat-label">
+                  DETECTIONS
+                </span>
+
+                <strong>
+                  {detections.length}
+                </strong>
+
+                <span className="stat-description">
+                  Detection records
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <div className="investigation-stat">
+
+              <div className="stat-icon note-stat-icon">
+                NT
+              </div>
+
+              <div className="stat-content">
+
+                <span className="stat-label">
+                  NOTES
+                </span>
+
+                <strong>
+                  {notes.length}
+                </strong>
+
+                <span className="stat-description">
+                  Analyst observations
+                </span>
+
+              </div>
+
+            </div>
+
           </div>
 
         </section>
 
 
-        {/* Detections */}
+        {/* =========================================
+            DETECTIONS
+            ========================================= */}
+
         <section className="section-block">
 
-          <h2 className="section-header">
-            DETECTIONS
-          </h2>
+          <div className="section-heading-row">
+
+            <div className="section-title-group">
+
+              <div className="section-eyebrow">
+                ANALYSIS RESULTS
+              </div>
+
+              <h2 className="section-header">
+                DETECTIONS
+              </h2>
+
+              <p className="section-description">
+                Detection results associated with this case.
+              </p>
+
+            </div>
+
+
+            <span className="section-count">
+
+              {filteredDetections.length}
+
+              {" "}
+
+              {filteredDetections.length === 1
+                ? "DETECTION"
+                : "DETECTIONS"}
+
+            </span>
+
+          </div>
+
+
+          <div className="section-toolbar">
+
+            <div className="table-search">
+
+              <span className="search-symbol">
+                ⌕
+              </span>
+
+              <input
+                type="text"
+                placeholder="Search detections..."
+                value={detectionSearch}
+                onChange={(e) =>
+                  setDetectionSearch(
+                    e.target.value
+                  )
+                }
+              />
+
+              {detectionSearch && (
+                <button
+                  className="clear-search"
+                  onClick={() =>
+                    setDetectionSearch("")
+                  }
+                  type="button"
+                >
+                  ×
+                </button>
+              )}
+
+            </div>
+
+          </div>
+
 
           <div className="table-wrapper">
 
-            <table className="soc-table">
+            <table className="soc-table detections-table">
 
               <thead>
+
                 <tr>
                   <th>TIME</th>
                   <th>EVENT TYPE</th>
@@ -472,68 +900,96 @@ function CaseDetail() {
                   <th>RULE</th>
                   <th>MITRE TECHNIQUE</th>
                 </tr>
+
               </thead>
+
 
               <tbody>
 
-                {detections.length === 0 ? (
+                {filteredDetections.length === 0 ? (
+
                   <tr>
+
                     <td
                       colSpan="7"
                       className="empty-row"
                     >
-                      No detections for this case.
+                      {detectionSearch
+                        ? "No detections match your search."
+                        : "No detections for this case."}
                     </td>
+
                   </tr>
+
                 ) : (
 
-                  detections.map((detection) => (
+                  filteredDetections.map(
+                    (detection) => (
 
-                    <tr key={detection.id}>
+                      <tr
+                        key={detection.id}
+                        className="clickable-row"
+                        onClick={() =>
+                          setSelectedDetection(
+                            detection
+                          )
+                        }
+                      >
 
-                      <td className="time-col">
-                        {detection.time
-                          ? new Date(
-                              detection.time
-                            ).toLocaleString()
-                          : "—"}
-                      </td>
+                        <td className="time-col">
+                          {formatDate(
+                            detection.time
+                          )}
+                        </td>
 
-                      <td className="bold-col">
-                        {detection.event_type || "—"}
-                      </td>
 
-                      <td>
-                        {detection.host || "—"}
-                      </td>
+                        <td className="bold-col">
+                          {detection.event_type ||
+                            "—"}
+                        </td>
 
-                      <td>
-                        {detection.user || "—"}
-                      </td>
 
-                      <td>
-                        <span
-                          className={`badge ${
-                            String(
-                              detection.severity || ""
-                            ).toLowerCase()
-                          }`}
-                        >
-                          {detection.severity || "—"}
-                        </span>
-                      </td>
+                        <td>
+                          {detection.host ||
+                            "—"}
+                        </td>
 
-                      <td className="code-col">
-                        {detection.detection_rule || "—"}
-                      </td>
 
-                      <td className="highlight-col">
-                        {detection.mitre_technique || "—"}
-                      </td>
+                        <td>
+                          {detection.user ||
+                            "—"}
+                        </td>
 
-                    </tr>
 
-                  ))
+                        <td>
+
+                          <span
+                            className={`badge ${getSeverityClass(
+                              detection.severity
+                            )}`}
+                          >
+                            {detection.severity ||
+                              "—"}
+                          </span>
+
+                        </td>
+
+
+                        <td className="code-col">
+                          {detection.detection_rule ||
+                            "—"}
+                        </td>
+
+
+                        <td className="highlight-col">
+                          {detection.mitre_technique ||
+                            "—"}
+                        </td>
+
+                      </tr>
+
+                    )
+                  )
 
                 )}
 
@@ -543,89 +999,187 @@ function CaseDetail() {
 
           </div>
 
+
+          {filteredDetections.length > 0 && (
+            <div className="table-hint">
+              Select a detection to inspect the complete record.
+            </div>
+          )}
+
         </section>
 
 
-        {/* Events */}
+        {/* =========================================
+            EVENTS
+            ========================================= */}
+
         <section className="section-block">
 
-          <h2 className="section-header">
-            EVENTS
-          </h2>
+          <div className="section-heading-row">
 
-          <div className="events-toolbar">
+            <div className="section-title-group">
 
-            <input
-              className="soc-input"
-              type="text"
-              placeholder="Search events..."
-            />
+              <div className="section-eyebrow">
+                CASE EVIDENCE
+              </div>
 
-            <span className="event-count">
-              {events.length} event
-              {events.length !== 1 ? "s" : ""}
+              <h2 className="section-header">
+                EVENTS
+              </h2>
+
+              <p className="section-description">
+                Evidence files associated with this investigation.
+              </p>
+
+            </div>
+
+
+            <span className="section-count">
+
+              {filteredEvents.length}
+
+              {" "}
+
+              {filteredEvents.length === 1
+                ? "EVENT"
+                : "EVENTS"}
+
             </span>
 
           </div>
 
+
+          <div className="section-toolbar">
+
+            <div className="table-search">
+
+              <span className="search-symbol">
+                ⌕
+              </span>
+
+              <input
+                type="text"
+                placeholder="Search event files..."
+                value={eventSearch}
+                onChange={(e) =>
+                  setEventSearch(
+                    e.target.value
+                  )
+                }
+              />
+
+              {eventSearch && (
+                <button
+                  className="clear-search"
+                  onClick={() =>
+                    setEventSearch("")
+                  }
+                  type="button"
+                >
+                  ×
+                </button>
+              )}
+
+            </div>
+
+          </div>
+
+
           <div className="table-wrapper">
 
-            <table className="soc-table">
+            <table className="soc-table events-table">
 
               <thead>
+
                 <tr>
-                  <th>FILE NAME</th>
-                  <th>FILE TYPE</th>
-                  <th>FILE PATH</th>
-                  <th>FILE SIZE</th>
-                  <th>CREATED</th>
+                  <th>FILE</th>
+                  <th>TYPE</th>
+                  <th>LOCATION</th>
+                  <th>SIZE</th>
+                  <th>ADDED</th>
                 </tr>
+
               </thead>
+
 
               <tbody>
 
-                {events.length === 0 ? (
+                {filteredEvents.length === 0 ? (
+
                   <tr>
+
                     <td
                       colSpan="5"
                       className="empty-row"
                     >
-                      No event files associated with this case.
+                      {eventSearch
+                        ? "No events match your search."
+                        : "No event records associated with this case."}
                     </td>
+
                   </tr>
+
                 ) : (
 
-                  events.map((event) => (
+                  filteredEvents.map(
+                    (event) => (
 
-                    <tr key={event.id}>
+                      <tr
+                        key={event.id}
+                        className="event-row"
+                      >
 
-                      <td className="bold-col">
-                        {event.file_name || "—"}
-                      </td>
+                        <td className="bold-col">
 
-                      <td>
-                        {event.file_type || "—"}
-                      </td>
+                          <div className="file-name-cell">
 
-                      <td className="code-col">
-                        {event.file_path || "—"}
-                      </td>
+                            <span className="file-icon">
+                              ▫
+                            </span>
 
-                      <td>
-                        {event.file_size ?? "—"}
-                      </td>
+                            <span>
+                              {event.file_name ||
+                                "—"}
+                            </span>
 
-                      <td className="time-col">
-                        {event.created_at
-                          ? new Date(
-                              event.created_at
-                            ).toLocaleString()
-                          : "—"}
-                      </td>
+                          </div>
 
-                    </tr>
+                        </td>
 
-                  ))
+
+                        <td>
+
+                          <span className="file-type-badge">
+                            {event.file_type ||
+                              "—"}
+                          </span>
+
+                        </td>
+
+
+                        <td className="code-col">
+                          {event.file_path ||
+                            "—"}
+                        </td>
+
+
+                        <td className="file-size-col">
+                          {formatFileSize(
+                            event.file_size
+                          )}
+                        </td>
+
+
+                        <td className="time-col">
+                          {formatDate(
+                            event.created_at
+                          )}
+                        </td>
+
+                      </tr>
+
+                    )
+                  )
 
                 )}
 
@@ -638,31 +1192,104 @@ function CaseDetail() {
         </section>
 
 
-        {/* Notes */}
+        {/* =========================================
+            NOTES
+            ========================================= */}
+
         <section className="section-block">
 
-          <h2 className="section-header">
-            NOTES
-          </h2>
+          <div className="section-heading-row">
+
+            <div className="section-title-group">
+
+              <div className="section-eyebrow">
+                ANALYST WORKSPACE
+              </div>
+
+              <h2 className="section-header">
+                INVESTIGATION NOTES
+              </h2>
+
+              <p className="section-description">
+                Analyst observations and investigation notes for this case.
+              </p>
+
+            </div>
+
+
+            <span className="section-count">
+
+              {notes.length}
+
+              {" "}
+
+              {notes.length === 1
+                ? "NOTE"
+                : "NOTES"}
+
+            </span>
+
+          </div>
+
 
           <div className="notes-container">
 
             {notes.length === 0 ? (
+
               <div className="empty-notes">
-                No notes for this case.
+
+                <div className="empty-notes-marker">
+                  +
+                </div>
+
+                <div className="empty-notes-title">
+                  No investigation notes
+                </div>
+
+                <div className="empty-notes-description">
+                  Add observations, findings, or investigative context below.
+                </div>
+
               </div>
+
             ) : (
 
-              notes.map((note) => (
+              notes.map((note, index) => (
 
-                <div
-                  className="note-item"
+                <article
+                  className="note-card"
                   key={note.id}
                 >
 
+                  <div className="note-card-header">
+
+                    <div className="note-card-identity">
+
+                      <span className="note-number">
+                        #{String(index + 1).padStart(2, "0")}
+                      </span>
+
+                      <span className="note-label">
+                        INVESTIGATION NOTE
+                      </span>
+
+                    </div>
+
+
+                    <span className="note-date">
+                      {formatDate(
+                        note.updated_at ||
+                        note.created_at
+                      )}
+                    </span>
+
+                  </div>
+
+
                   {editingNoteId === note.id ? (
 
-                    <>
+                    <div className="note-edit-area">
+
                       <textarea
                         className="note-edit-input"
                         value={editingNoteContent}
@@ -673,72 +1300,87 @@ function CaseDetail() {
                         }
                       />
 
-                      <div className="note-actions">
+
+                      <div className="note-edit-actions">
 
                         <button
                           className="soc-btn"
                           onClick={() =>
-                            handleUpdateNote(note.id)
+                            handleUpdateNote(
+                              note.id
+                            )
                           }
                         >
-                          Save
+                          SAVE
                         </button>
 
+
                         <button
-                          className="soc-btn"
-                          onClick={cancelEditingNote}
+                          className="soc-btn secondary-btn"
+                          onClick={
+                            cancelEditingNote
+                          }
                         >
-                          Cancel
+                          CANCEL
                         </button>
 
                       </div>
-                    </>
+
+                    </div>
 
                   ) : (
 
                     <>
-                      <p>
+
+                      <div className="note-content">
                         {note.content}
-                      </p>
+                      </div>
 
-                      <div className="note-footer">
 
-                        <span className="note-meta">
-                          {note.created_at
-                            ? new Date(
-                                note.created_at
-                              ).toLocaleString()
-                            : ""}
+                      <div className="note-card-footer">
+
+                        <span className="note-created">
+                          Created{" "}
+                          {formatDate(
+                            note.created_at
+                          )}
                         </span>
+
 
                         <div className="note-actions">
 
                           <button
                             className="soc-btn"
                             onClick={() =>
-                              startEditingNote(note)
+                              startEditingNote(
+                                note
+                              )
                             }
                           >
-                            Edit
+                            EDIT
                           </button>
+
 
                           <button
                             className="soc-btn delete-note-button"
                             onClick={() =>
-                              handleDeleteNote(note.id)
+                              handleDeleteNote(
+                                note.id
+                              )
                             }
                           >
-                            Delete
+                            DELETE
                           </button>
 
                         </div>
 
                       </div>
+
                     </>
 
                   )}
 
-                </div>
+                </article>
 
               ))
 
@@ -746,34 +1388,48 @@ function CaseDetail() {
 
 
             {/* Add Note */}
+
             <form
               className="add-note-box"
               onSubmit={handleCreateNote}
             >
 
-              <label className="add-note-label">
-                ADD NOTE
-              </label>
+              <div className="add-note-header">
+
+                <div className="add-note-title">
+                  ADD INVESTIGATION NOTE
+                </div>
+
+                <div className="add-note-description">
+                  Record an observation, finding, or investigative thought.
+                </div>
+
+              </div>
+
 
               <textarea
                 value={noteContent}
                 onChange={(e) =>
-                  setNoteContent(e.target.value)
+                  setNoteContent(
+                    e.target.value
+                  )
                 }
                 placeholder="Write an investigation note..."
               />
 
+
               <div className="add-note-actions">
 
                 <span className="shortcut-hint">
-                  Notes are associated with this case.
+                  Associated with CASE-{caseData.id}
                 </span>
+
 
                 <button
                   type="submit"
-                  className="soc-btn"
+                  className="soc-btn add-note-button"
                 >
-                  Add Note
+                  ADD NOTE
                 </button>
 
               </div>
@@ -787,29 +1443,175 @@ function CaseDetail() {
       </main>
 
 
-      {/* Edit Case Modal */}
-      {showEdit && (
+      {/* =========================================
+          DETECTION DETAIL MODAL
+          ========================================= */}
 
-        <div className="modal-overlay">
+      {selectedDetection && (
 
-          <div className="case-modal">
+        <div
+          className="modal-overlay"
+          onClick={() =>
+            setSelectedDetection(null)
+          }
+        >
 
-            <div className="modal-header">
+          <div
+            className="record-modal"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
 
-              <h2>
-                Edit Case
-              </h2>
+            <div className="record-modal-header">
+
+              <div>
+
+                <div className="record-modal-label">
+                  DETECTION RECORD
+                </div>
+
+                <h2>
+                  Detection #{selectedDetection.id}
+                </h2>
+
+              </div>
+
 
               <button
                 className="modal-close"
-                onClick={() => setShowEdit(false)}
+                onClick={() =>
+                  setSelectedDetection(null)
+                }
               >
                 ×
               </button>
 
             </div>
 
-            <form onSubmit={handleUpdateCase}>
+
+            <div className="record-modal-body">
+
+              <div className="record-grid">
+
+                {Object.entries(
+                  selectedDetection
+                ).map(
+                  ([key, value]) => (
+
+                    <div
+                      className="record-field"
+                      key={key}
+                    >
+
+                      <div className="record-field-label">
+                        {key
+                          .replaceAll("_", " ")
+                          .toUpperCase()}
+                      </div>
+
+
+                      <div className="record-field-value">
+
+                        {value === null ||
+                        value === undefined ||
+                        value === ""
+                          ? "—"
+                          : typeof value === "object"
+                          ? JSON.stringify(
+                              value,
+                              null,
+                              2
+                            )
+                          : String(value)}
+
+                      </div>
+
+                    </div>
+
+                  )
+                )}
+
+              </div>
+
+            </div>
+
+
+            <div className="record-modal-footer">
+
+              <span>
+                Detection associated with CASE-{caseData.id}
+              </span>
+
+
+              <button
+                className="soc-btn"
+                onClick={() =>
+                  setSelectedDetection(null)
+                }
+              >
+                CLOSE
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
+
+      {/* =========================================
+          EDIT CASE MODAL
+          ========================================= */}
+
+      {showEdit && (
+
+        <div
+          className="modal-overlay"
+          onClick={() =>
+            setShowEdit(false)
+          }
+        >
+
+          <div
+            className="case-modal"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
+
+            <div className="modal-header">
+
+              <div>
+
+                <div className="modal-eyebrow">
+                  CASE MANAGEMENT
+                </div>
+
+                <h2>
+                  Edit Case
+                </h2>
+
+              </div>
+
+
+              <button
+                className="modal-close"
+                onClick={() =>
+                  setShowEdit(false)
+                }
+              >
+                ×
+              </button>
+
+            </div>
+
+
+            <form
+              onSubmit={handleUpdateCase}
+            >
 
               <div className="modal-body">
 
@@ -824,11 +1626,14 @@ function CaseDetail() {
                     name="case_name"
                     type="text"
                     value={editForm.case_name}
-                    onChange={handleEditChange}
+                    onChange={
+                      handleEditChange
+                    }
                     required
                   />
 
                 </div>
+
 
                 <div className="modal-form-group">
 
@@ -839,11 +1644,16 @@ function CaseDetail() {
                   <textarea
                     id="edit-case-description"
                     name="description"
-                    value={editForm.description}
-                    onChange={handleEditChange}
+                    value={
+                      editForm.description
+                    }
+                    onChange={
+                      handleEditChange
+                    }
                   />
 
                 </div>
+
 
                 <div className="modal-form-group">
 
@@ -855,8 +1665,11 @@ function CaseDetail() {
                     id="edit-case-status"
                     name="status"
                     value={editForm.status}
-                    onChange={handleEditChange}
+                    onChange={
+                      handleEditChange
+                    }
                   >
+
                     <option value="Open">
                       Open
                     </option>
@@ -872,27 +1685,32 @@ function CaseDetail() {
                     <option value="Closed">
                       Closed
                     </option>
+
                   </select>
 
                 </div>
 
               </div>
 
+
               <div className="modal-footer">
 
                 <button
                   type="button"
                   className="cancel-button"
-                  onClick={() => setShowEdit(false)}
+                  onClick={() =>
+                    setShowEdit(false)
+                  }
                 >
-                  Cancel
+                  CANCEL
                 </button>
+
 
                 <button
                   type="submit"
                   className="create-button"
                 >
-                  Save Changes
+                  SAVE CHANGES
                 </button>
 
               </div>
@@ -906,18 +1724,40 @@ function CaseDetail() {
       )}
 
 
-      {/* Delete Confirmation */}
+      {/* =========================================
+          DELETE CONFIRMATION
+          ========================================= */}
+
       {showDeleteConfirm && (
 
-        <div className="modal-overlay">
+        <div
+          className="modal-overlay"
+          onClick={() =>
+            setShowDeleteConfirm(false)
+          }
+        >
 
-          <div className="case-modal delete-modal">
+          <div
+            className="case-modal delete-modal"
+            onClick={(e) =>
+              e.stopPropagation()
+            }
+          >
 
             <div className="modal-header">
 
-              <h2>
-                Delete Case
-              </h2>
+              <div>
+
+                <div className="modal-eyebrow">
+                  DESTRUCTIVE ACTION
+                </div>
+
+                <h2>
+                  Delete Case
+                </h2>
+
+              </div>
+
 
               <button
                 className="modal-close"
@@ -930,24 +1770,32 @@ function CaseDetail() {
 
             </div>
 
+
             <div className="modal-body">
 
               <p className="delete-warning">
+
                 Are you sure you want to delete
+
                 <strong>
                   {" "}
                   {caseData.case_name}
                 </strong>
                 ?
+
               </p>
 
+
               <p className="delete-warning-detail">
+
                 This will permanently delete the case
                 and its related detections, events,
                 notes, and evidence files.
+
               </p>
 
             </div>
+
 
             <div className="modal-footer">
 
@@ -957,14 +1805,15 @@ function CaseDetail() {
                   setShowDeleteConfirm(false)
                 }
               >
-                Cancel
+                CANCEL
               </button>
+
 
               <button
                 className="delete-confirm-button"
                 onClick={handleDeleteCase}
               >
-                Delete Case
+                DELETE CASE
               </button>
 
             </div>
@@ -978,5 +1827,6 @@ function CaseDetail() {
     </div>
   );
 }
+
 
 export default CaseDetail;

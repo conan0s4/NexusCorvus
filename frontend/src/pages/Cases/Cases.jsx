@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Cases.css";
 import { getCases, createCase } from "../../api/caseApi";
 
 function Cases() {
+  const navigate = useNavigate();
+
   const [cases, setCases] = useState([]);
   const [showCreateCase, setShowCreateCase] = useState(false);
 
@@ -38,6 +41,16 @@ function Cases() {
     } finally {
       setLoading(false);
     }
+  };
+
+  /*
+   * OPEN CASE DETAIL
+   *
+   * The case ID is placed in the URL so CaseDetail
+   * can retrieve the correct case from the backend.
+   */
+  const handleOpenCase = (caseId) => {
+    navigate(`/cases/${caseId}`);
   };
 
   const handleCreateCase = async (e) => {
@@ -137,6 +150,7 @@ function Cases() {
         </div>
 
         <div className="filter-group">
+
           <button
             className={`filter ${
               statusFilter === "All" ? "active" : ""
@@ -181,6 +195,7 @@ function Cases() {
           >
             Closed
           </button>
+
         </div>
 
         <div className="case-count">
@@ -211,10 +226,20 @@ function Cases() {
           </div>
         ) : (
           filteredCases.map((caseItem) => (
+
             <div
               className="case-row"
               key={caseItem.id}
+              onClick={() => handleOpenCase(caseItem.id)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  handleOpenCase(caseItem.id);
+                }
+              }}
             >
+
               <div className="case-id-cell">
                 CASE-{caseItem.id}
               </div>
@@ -244,7 +269,9 @@ function Cases() {
                     ).toLocaleString()
                   : "-"}
               </div>
+
             </div>
+
           ))
         )}
 
@@ -256,6 +283,7 @@ function Cases() {
           className="modal-overlay"
           onClick={() => setShowCreateCase(false)}
         >
+
           <div
             className="create-case-modal"
             onClick={(e) => e.stopPropagation()}
@@ -263,7 +291,10 @@ function Cases() {
 
             {/* Modal Header */}
             <div className="modal-header">
-              <h2>Create New Case</h2>
+
+              <h2>
+                Create New Case
+              </h2>
 
               <button
                 className="modal-close"
@@ -271,6 +302,7 @@ function Cases() {
               >
                 ×
               </button>
+
             </div>
 
             {/* Form */}
@@ -280,6 +312,7 @@ function Cases() {
 
                 {/* Case Name */}
                 <div className="modal-form-group">
+
                   <label htmlFor="case-name">
                     CASE NAME
                   </label>
@@ -293,10 +326,12 @@ function Cases() {
                       setCaseName(e.target.value)
                     }
                   />
+
                 </div>
 
                 {/* Description */}
                 <div className="modal-form-group">
+
                   <label htmlFor="case-description">
                     DESCRIPTION
                   </label>
@@ -309,10 +344,12 @@ function Cases() {
                       setDescription(e.target.value)
                     }
                   />
+
                 </div>
 
                 {/* Status */}
                 <div className="modal-form-group">
+
                   <label htmlFor="case-status">
                     STATUS
                   </label>
@@ -324,6 +361,7 @@ function Cases() {
                       setStatus(e.target.value)
                     }
                   >
+
                     <option value="Investigating">
                       Investigating
                     </option>
@@ -339,7 +377,9 @@ function Cases() {
                     <option value="Closed">
                       Closed
                     </option>
+
                   </select>
+
                 </div>
 
               </div>
@@ -370,6 +410,7 @@ function Cases() {
             </form>
 
           </div>
+
         </div>
       )}
 

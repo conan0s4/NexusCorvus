@@ -1,4 +1,7 @@
-/* Layout */
+/* =========================================
+   CASES PAGE
+   ========================================= */
+
 .cases-page {
   width: 100%;
   min-height: 100vh;
@@ -10,7 +13,11 @@
   overflow-x: hidden;
 }
 
-/* Page Header */
+
+/* =========================================
+   PAGE HEADER
+   ========================================= */
+
 .cases-header {
   display: flex;
   justify-content: space-between;
@@ -24,6 +31,7 @@
   color: #f0f6fc;
   font-size: 1.15rem;
   font-weight: 600;
+  text-align: left;
 }
 
 .cases-header p {
@@ -32,7 +40,11 @@
   font-size: 0.7rem;
 }
 
-/* New Case Button */
+
+/* =========================================
+   NEW CASE BUTTON
+   ========================================= */
+
 .new-case-button {
   display: flex;
   align-items: center;
@@ -54,7 +66,11 @@
   background-color: #30363d;
 }
 
-/* Error */
+
+/* =========================================
+   ERROR
+   ========================================= */
+
 .cases-error {
   margin-bottom: 0.75rem;
   padding: 0.5rem 0.6rem;
@@ -65,7 +81,11 @@
   font-size: 0.7rem;
 }
 
-/* Toolbar */
+
+/* =========================================
+   TOOLBAR
+   ========================================= */
+
 .cases-toolbar {
   display: flex;
   align-items: center;
@@ -75,7 +95,11 @@
   box-sizing: border-box;
 }
 
-/* Search */
+
+/* =========================================
+   SEARCH
+   ========================================= */
+
 .search-box {
   display: flex;
   align-items: center;
@@ -106,7 +130,11 @@
   color: #484f58;
 }
 
-/* Status Filters */
+
+/* =========================================
+   STATUS FILTERS
+   ========================================= */
+
 .filter-group {
   display: flex;
   align-items: center;
@@ -135,7 +163,11 @@
   color: #f0f6fc;
 }
 
-/* Case Count */
+
+/* =========================================
+   CASE COUNT
+   ========================================= */
+
 .case-count {
   margin-left: auto;
   color: #484f58;
@@ -143,7 +175,11 @@
   white-space: nowrap;
 }
 
-/* Cases Table */
+
+/* =========================================
+   CASES TABLE
+   ========================================= */
+
 .cases-table {
   width: 100%;
   background-color: #161b22;
@@ -152,7 +188,11 @@
   overflow: hidden;
 }
 
-/* Table Header */
+
+/* =========================================
+   TABLE STRUCTURE
+   ========================================= */
+
 .table-header,
 .case-row {
   display: grid;
@@ -162,17 +202,10 @@
     1fr
     1.4fr
     1.4fr;
+
   align-items: center;
   width: 100%;
   box-sizing: border-box;
-}
-
-.table-header {
-  min-height: 30px;
-  border-bottom: 1px solid #21262d;
-  color: #8b949e;
-  font-size: 0.6rem;
-  font-weight: 500;
 }
 
 .table-header > div,
@@ -185,20 +218,64 @@
   white-space: nowrap;
 }
 
-/* Case Row */
+
+/* =========================================
+   TABLE HEADER
+   ========================================= */
+
+.table-header {
+  min-height: 30px;
+  border-bottom: 1px solid #21262d;
+  color: #8b949e;
+  font-size: 0.6rem;
+  font-weight: 500;
+}
+
+
+/* =========================================
+   CASE ROW
+   ========================================= */
+
 .case-row {
   min-height: 38px;
   border-bottom: 1px solid #21262d;
   font-size: 0.7rem;
+
+  /* Case rows are clickable */
+  cursor: pointer;
+
+  /* Small transition for hover/focus */
+  transition: background-color 0.12s ease;
 }
 
 .case-row:last-child {
   border-bottom: none;
 }
 
+
+/* Hover state */
+
 .case-row:hover {
   background-color: #1c2128;
 }
+
+
+/* Keyboard focus */
+
+.case-row:focus {
+  outline: none;
+  background-color: #1c2128;
+}
+
+.case-row:focus-visible {
+  outline: 1px solid #484f58;
+  outline-offset: -1px;
+}
+
+
+/* =========================================
+   CASE CELLS
+   ========================================= */
 
 .case-id-cell {
   color: #8b949e;
@@ -214,7 +291,11 @@
   font-size: 0.65rem;
 }
 
-/* Status */
+
+/* =========================================
+   CASE STATUS
+   ========================================= */
+
 .case-status {
   color: #c9d1d9;
   font-size: 0.65rem;
@@ -222,7 +303,11 @@
   text-transform: uppercase;
 }
 
-/* Empty State */
+
+/* =========================================
+   EMPTY STATE
+   ========================================= */
+
 .cases-empty {
   display: flex;
   align-items: center;
@@ -236,7 +321,11 @@
   margin: 0;
 }
 
-/* Modal Overlay */
+
+/* =========================================
+   MODAL OVERLAY
+   ========================================= */
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -249,7 +338,11 @@
   box-sizing: border-box;
 }
 
-/* Create Case Modal */
+
+/* =========================================
+   CREATE CASE MODAL
+   ========================================= */
+
 .create-case-modal {
   width: 100%;
   max-width: 460px;
@@ -259,7 +352,11 @@
   box-sizing: border-box;
 }
 
-/* Modal Header */
+
+/* =========================================
+   MODAL HEADER
+   ========================================= */
+
 .modal-header {
   display: flex;
   align-items: center;
@@ -288,7 +385,11 @@
   color: #f0f6fc;
 }
 
-/* Modal Body */
+
+/* =========================================
+   MODAL BODY
+   ========================================= */
+
 .modal-body {
   display: flex;
   flex-direction: column;
@@ -344,7 +445,11 @@
   cursor: pointer;
 }
 
-/* Modal Footer */
+
+/* =========================================
+   MODAL FOOTER
+   ========================================= */
+
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -353,7 +458,11 @@
   border-top: 1px solid #21262d;
 }
 
-/* Cancel */
+
+/* =========================================
+   CANCEL BUTTON
+   ========================================= */
+
 .cancel-button {
   background-color: transparent;
   border: 1px solid #30363d;
@@ -369,7 +478,11 @@
   color: #c9d1d9;
 }
 
-/* Create */
+
+/* =========================================
+   CREATE BUTTON
+   ========================================= */
+
 .create-button {
   background-color: #21262d;
   border: 1px solid #30363d;
@@ -389,8 +502,13 @@
   cursor: not-allowed;
 }
 
-/* Responsive */
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
 @media (max-width: 900px) {
+
   .cases-toolbar {
     flex-wrap: wrap;
   }
@@ -408,15 +526,14 @@
       1.3fr
       1.3fr;
   }
+
 }
 
+
 @media (max-width: 700px) {
+
   .cases-page {
     padding: 0.75rem;
-  }
-
-  .cases-header {
-    align-items: flex-start;
   }
 
   .cases-toolbar {
@@ -449,15 +566,20 @@
   .case-row {
     min-width: 700px;
   }
+
 }
 
+
 @media (max-width: 500px) {
+
   .cases-header {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .new-case-button {
     width: 100%;
     justify-content: center;
   }
+
 }

@@ -2,7 +2,11 @@ from django.urls import path
 
 
 from .views import (
+    csrf_token,
     LoginView,
+    CurrentUserView,
+    ChangePasswordView,
+    LogoutView,
 
     CaseListCreateView,
     CaseDetailView,
@@ -26,6 +30,26 @@ urlpatterns = [
         name='login'
     ),
 
+    path(
+        'auth/user/',
+        CurrentUserView.as_view(),
+        name='current-user'
+    ),
+    path(
+        'auth/password/',
+        ChangePasswordView.as_view(),
+        name='change-password'
+    ),
+    path(
+        'auth/logout/',
+        LogoutView.as_view(),
+        name='logout'
+    ),
+    path(
+        'auth/csrf/',
+        csrf_token,
+        name='csrf-token'
+    ),
     # CASE
     path(
         'cases/',
