@@ -290,7 +290,7 @@
    SECTIONS
    ========================================= */
 
-.section-block {
+  .section-block {
   display: flex;
   flex-direction: column;
 
@@ -2196,6 +2196,7 @@
     white-space: normal;
 
     line-height: 1.35;
+
   }
 
 

@@ -68,7 +68,7 @@ function SigmaDetection() {
             </div>
 
             <div className="sigma-upload-formats">
-              EVTX · JSON · CSV · LOG
+              EVTX
             </div>
 
           </div>
