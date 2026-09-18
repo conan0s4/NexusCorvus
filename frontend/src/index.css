@@ -42,6 +42,53 @@
 
   --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.02) inset, 0 6px 20px rgba(0, 0, 0, 0.18);
   --shadow-overlay: 0 24px 60px rgba(0, 0, 0, 0.5);
+
+  --scroll-thumb: #243041;
+  --scroll-thumb-hover: #35445a;
+
+  --bg-gradient-end: #070b10;
+}
+
+:root[data-theme="light"] {
+  --bg-root: #eceff4;
+  --bg-app: #f1f4f8;
+  --bg-panel: #ffffff;
+  --bg-panel-2: #f6f8fb;
+  --bg-input: #ffffff;
+  --bg-hover: #e7ecf2;
+  --bg-active: #dde4ec;
+  --bg-overlay: rgba(18, 26, 37, 0.35);
+
+  --border: #d7dfe8;
+  --border-strong: #bfcbd8;
+  --border-faint: #e2e8ef;
+
+  --text: #35414f;
+  --text-strong: #10161f;
+  --text-dim: #55657a;
+  --text-muted: #7a8ba0;
+  --text-faint: #a2b0bf;
+
+  --accent: #1573b8;
+  --accent-bright: #0f83d6;
+  --accent-anchor: #2b6ea8;
+  --accent-tint: rgba(21, 115, 184, 0.09);
+  --accent-border: rgba(21, 115, 184, 0.3);
+
+  --red: #c23d35;
+  --red-tint: rgba(194, 61, 53, 0.08);
+  --green: #2c8a63;
+  --green-tint: rgba(44, 138, 99, 0.08);
+  --amber: #ad7b1e;
+  --amber-tint: rgba(173, 123, 30, 0.1);
+
+  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.7) inset, 0 6px 20px rgba(28, 40, 54, 0.1);
+  --shadow-overlay: 0 24px 60px rgba(28, 40, 54, 0.28);
+
+  --scroll-thumb: #c3cdd9;
+  --scroll-thumb-hover: #a8b5c4;
+
+  --bg-gradient-end: #e3e8ef;
 }
 
 * {
@@ -99,14 +146,14 @@ a:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #243041;
+  background: var(--scroll-thumb);
   border: 2px solid transparent;
   background-clip: padding-box;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #35445a;
+  background: var(--scroll-thumb-hover);
   border: 2px solid transparent;
   background-clip: padding-box;
 }
@@ -525,4 +572,35 @@ pre {
   height: auto;
   padding: 7px 9px;
   cursor: pointer;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 24px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+
+.theme-toggle:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-tint);
+}
+
+.theme-toggle-floating {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1200;
+  width: 30px;
+  height: 28px;
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-panel);
 }

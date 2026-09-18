@@ -7,7 +7,7 @@
   background: var(--bg-root);
   background-image:
     radial-gradient(circle at 50% 0%, rgba(77, 159, 214, 0.05), transparent 55%),
-    linear-gradient(180deg, var(--bg-root), #070b10);
+    linear-gradient(180deg, var(--bg-root), var(--bg-gradient-end));
 }
 
 .login-card {

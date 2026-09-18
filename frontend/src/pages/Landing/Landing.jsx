@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "../../components/ThemeToggle/ThemeToggle";
 import "./Landing.css";
 
 function Landing() {
@@ -36,6 +37,8 @@ function Landing() {
 
   return (
     <div className="landing-page">
+
+      <ThemeToggle floating />
 
       {/* =========================================
           MAIN

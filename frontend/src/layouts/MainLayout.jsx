@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar/Sidebar";
+import ThemeToggle from "../components/ThemeToggle/ThemeToggle";
 import { getCurrentUser, logout } from "../api/authApi";
 import "./MainLayout.css";
 
@@ -72,6 +73,8 @@ function MainLayout() {
               <span className="status-pulse" />
               LOCAL WORKSPACE
             </span>
+
+            <ThemeToggle />
 
             <div className="topbar-user">
               <span className="user-avatar">

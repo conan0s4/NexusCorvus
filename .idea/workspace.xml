@@ -1,44 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="087c62c6-337b-47f8-b757-588962c1317b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/config/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/config/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/config/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/config/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/core/crud.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/crud.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/core/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/tests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/public/favicon.svg" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/public/favicon.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/public/icons.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/App.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/App.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/apiclient.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/apiclient.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/eventApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/eventApi.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/evidenceApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/evidenceApi.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/assets/react.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/assets/vite.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Sidebar/Sidebar.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Sidebar/Sidebar.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Sidebar/Sidebar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Sidebar/Sidebar.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/layouts/MainLayout.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/layouts/MainLayout.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/layouts/MainLayout.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/layouts/MainLayout.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/Cases.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Landing/Landing.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Landing/Landing.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Landing/Landing.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Landing/Landing.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/LogAnalysis/LogAnalysis.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/LogAnalysis/LogAnalysis.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/LogAnalysis/LogAnalysis.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/LogAnalysis/LogAnalysis.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Login/Login.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Login/Login.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Login/Login.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Login/Login.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Settings/Settings.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Settings/Settings.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Settings/Settings.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Settings/Settings.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.jsx" afterDir="false" />
-    </list>
+    <list default="true" id="087c62c6-337b-47f8-b757-588962c1317b" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />

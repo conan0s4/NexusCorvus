@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./Login.css";
 import shieldLogo from "../../assets/shield.svg";
+import ThemeToggle from "../../components/ThemeToggle/ThemeToggle";
 import { login } from "../../api/authApi";
 import { useNavigate } from "react-router-dom";
 
@@ -34,6 +35,7 @@ function Login() {
 
   return (
     <div className="login-page">
+      <ThemeToggle floating />
       <div className="login-card">
 
         <div className="login-logo">
