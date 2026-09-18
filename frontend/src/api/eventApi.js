@@ -15,6 +15,17 @@ export async function createEvent(eventData) {
     });
 }
 
+export async function createEventFile(caseId, fileName, jsonContent) {
+    return apiRequest("/events/", {
+        method: "POST",
+        body: JSON.stringify({
+            case_id: caseId,
+            file_name: fileName,
+            content: jsonContent,
+        }),
+    });
+}
+
 export async function deleteEvent(eventId) {
     return apiRequest(`/events/${eventId}/`, {
         method: "DELETE",

@@ -1,31 +1,19 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
 
 import shieldLogo from "../../assets/shield.svg";
+import dashboardIcon from "../../assets/icons/dashboard.svg";
 import casesIcon from "../../assets/icons/cases.svg";
+import evidenceIcon from "../../assets/icons/evidence.svg";
+import eventsIcon from "../../assets/icons/events.svg";
 import logAnalysisIcon from "../../assets/icons/log-analysis.svg";
+import radarIcon from "../../assets/icons/radar.svg";
 import settingsIcon from "../../assets/icons/settings.svg";
 
-import {logout} from "../../api/authApi.js";
-
 function Sidebar() {
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-
-      // Backend session has now been destroyed
-      navigate("/");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
-
   return (
     <aside className="sidebar">
 
-      {/* Brand */}
       <div className="sidebar-brand">
         <div className="sidebar-logo">
           <img src={shieldLogo} alt="NexusCorvus" />
@@ -37,58 +25,116 @@ function Sidebar() {
           </div>
 
           <div className="brand-subtitle">
-            Digital Forensics INVESTIGATION
-            <br />
-            PLATFORM
+            DFIR INVESTIGATION WORKSPACE
           </div>
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="sidebar-nav">
 
-        <NavLink
-          to="/cases"
-          className={({ isActive }) =>
-            `sidebar-item ${isActive ? "active" : ""}`
-          }
-        >
-          <img src={casesIcon} alt="" />
-          <span>Cases</span>
-        </NavLink>
+        <div className="nav-group">
+          <div className="nav-group-label">
+            WORKSPACE
+          </div>
 
-        <NavLink
-          to="/log-analysis"
-          className={({ isActive }) =>
-            `sidebar-item ${isActive ? "active" : ""}`
-          }
-        >
-          <img src={logAnalysisIcon} alt="" />
-          <span>Log Analysis</span>
-        </NavLink>
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              `sidebar-item ${isActive ? "active" : ""}`
+            }
+          >
+            <img src={dashboardIcon} alt="" />
+            <span>Dashboard</span>
+          </NavLink>
 
-        <div className="sidebar-divider" />
+          <NavLink
+            to="/cases"
+            className={({ isActive }) =>
+              `sidebar-item ${isActive ? "active" : ""}`
+            }
+          >
+            <img src={casesIcon} alt="" />
+            <span>Cases</span>
+          </NavLink>
+        </div>
 
-        <NavLink
-          to="/settings"
-          className={({ isActive }) =>
-            `sidebar-item ${isActive ? "active" : ""}`
-          }
-        >
-          <img src={settingsIcon} alt="" />
-          <span>Settings</span>
-        </NavLink>
+        <div className="nav-group">
+          <div className="nav-group-label">
+            ARTIFACTS
+          </div>
+
+          <NavLink
+            to="/evidence"
+            className={({ isActive }) =>
+              `sidebar-item ${isActive ? "active" : ""}`
+            }
+          >
+            <img src={evidenceIcon} alt="" />
+            <span>Evidence</span>
+          </NavLink>
+
+          <NavLink
+            to="/events"
+            className={({ isActive }) =>
+              `sidebar-item ${isActive ? "active" : ""}`
+            }
+          >
+            <img src={eventsIcon} alt="" />
+            <span>Events</span>
+          </NavLink>
+        </div>
+
+        <div className="nav-group">
+          <div className="nav-group-label">
+            ANALYSIS
+          </div>
+
+          <NavLink
+            to="/log-analysis"
+            className={({ isActive }) =>
+              `sidebar-item ${isActive ? "active" : ""}`
+            }
+          >
+            <img src={logAnalysisIcon} alt="" />
+            <span>Log Analysis</span>
+          </NavLink>
+
+          <NavLink
+            to="/sigma-detection"
+            className={({ isActive }) =>
+              `sidebar-item ${isActive ? "active" : ""}`
+            }
+          >
+            <img src={radarIcon} alt="" />
+            <span>Sigma Detection</span>
+          </NavLink>
+        </div>
+
+        <div className="nav-group">
+          <div className="nav-group-label">
+            SYSTEM
+          </div>
+
+          <NavLink
+            to="/settings"
+            className={({ isActive }) =>
+              `sidebar-item ${isActive ? "active" : ""}`
+            }
+          >
+            <img src={settingsIcon} alt="" />
+            <span>Settings</span>
+          </NavLink>
+        </div>
 
       </nav>
 
-      {/* Logout */}
-      <div>
-        <button
-          className="logout-button"
-          onClick={handleLogout}
-        >
-          Logout
-        </button>
+      <div className="sidebar-footer">
+        <span className="footer-build">
+          BUILD 0.1.0
+        </span>
+        <span className="footer-mode">
+          LOCAL / STANDALONE
+        </span>
       </div>
 
     </aside>

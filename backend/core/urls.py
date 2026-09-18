@@ -23,6 +23,8 @@ from .views import (
 
 urlpatterns = [
 
+
+
     # AUTH
     path(
         'auth/login/',

@@ -73,11 +73,36 @@ async function apiRequest(endpoint, options = {}) {
         return null;
     }
 
-    const data = await response.json();
+    const contentType = response.headers.get("content-type") || "";
+
+    let data;
+    if (contentType.includes("application/json")) {
+        try {
+            data = await response.json();
+        } catch {
+            throw new Error("Server returned an invalid JSON response.");
+        }
+    } else {
+        // Non-JSON response (e.g. Django CSRF 403 HTML page or a 500
+        // debug page). Surface a clean message instead of a raw
+        // "Unexpected token '<'" JSON parse error.
+        const text = await response.text();
+        if (!response.ok) {
+            if (response.status === 403) {
+                throw new Error(
+                    "Request blocked by the server (CSRF or authorization). Please retry."
+                );
+            }
+            throw new Error(
+                `Server error (${response.status}). Please try again later.`
+            );
+        }
+        throw new Error("Server returned an unexpected non-JSON response.");
+    }
 
     if (!response.ok) {
         throw new Error(
-            data.detail || "API request failed"
+            data.detail || data.error || "API request failed"
         );
     }
 

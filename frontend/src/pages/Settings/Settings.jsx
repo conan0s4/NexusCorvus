@@ -24,10 +24,6 @@ function Settings() {
   const [savingUsername, setSavingUsername] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
 
-  useEffect(() => {
-    loadUser();
-  }, []);
-
   async function loadUser() {
     try {
       const user = await getCurrentUser();
@@ -40,6 +36,10 @@ function Settings() {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    loadUser();
+  }, []);
 
   async function handleUsernameSubmit(e) {
     e.preventDefault();
@@ -112,8 +112,10 @@ function Settings() {
   if (loading) {
     return (
       <div className="settings-page">
-        <div className="settings-loading">
-          Loading settings...
+        <div className="nc-empty">
+          <div className="nc-empty-title">
+            Loading settings...
+          </div>
         </div>
       </div>
     );
@@ -122,30 +124,39 @@ function Settings() {
   return (
     <div className="settings-page">
 
-      <div className="settings-header">
-        <h1>Settings</h1>
-        <p>
-          Manage your NexusCorvus account settings.
-        </p>
-      </div>
+      <header className="page-header">
+        <div>
+          <h1 className="page-title">Settings</h1>
+          <p className="page-subtitle">
+            Account and workspace configuration
+          </p>
+        </div>
+      </header>
 
       {/* USERNAME */}
 
-      <section className="settings-card">
+      <section className="nc-panel settings-card">
 
-        <div className="settings-card-header">
-          <h2>Account</h2>
-          <p>
-            Update the username associated with your account.
-          </p>
+        <div className="panel-header">
+          <div>
+            <div className="panel-eyebrow">
+              ACCOUNT
+            </div>
+            <h2 className="panel-title">
+              USERNAME
+            </h2>
+          </div>
         </div>
 
-        <form onSubmit={handleUsernameSubmit}>
+        <form className="settings-form" onSubmit={handleUsernameSubmit}>
 
-          <div className="settings-field">
-            <label>USERNAME</label>
-
+          <div className="nc-field">
+            <label className="nc-field-label" htmlFor="settings-username">
+              USERNAME
+            </label>
             <input
+              id="settings-username"
+              className="nc-input"
               type="text"
               value={newUsername}
               onChange={(e) =>
@@ -156,48 +167,55 @@ function Settings() {
           </div>
 
           {usernameMessage && (
-            <p className="settings-success">
+            <div className="settings-success">
               {usernameMessage}
-            </p>
+            </div>
           )}
 
           {usernameError && (
-            <p className="settings-error">
+            <div className="nc-error-banner">
               {usernameError}
-            </p>
+            </div>
           )}
 
-          <button
-            type="submit"
-            disabled={savingUsername}
-          >
-            {savingUsername
-              ? "Saving..."
-              : "Save Username"}
-          </button>
+          <div className="settings-actions">
+            <button
+              type="submit"
+              className="nc-btn nc-btn-primary"
+              disabled={savingUsername}
+            >
+              {savingUsername ? "SAVING..." : "SAVE USERNAME"}
+            </button>
+          </div>
 
         </form>
 
       </section>
 
-
       {/* PASSWORD */}
 
-      <section className="settings-card">
+      <section className="nc-panel settings-card">
 
-        <div className="settings-card-header">
-          <h2>Password</h2>
-          <p>
-            Change your account password.
-          </p>
+        <div className="panel-header">
+          <div>
+            <div className="panel-eyebrow">
+              ACCOUNT
+            </div>
+            <h2 className="panel-title">
+              PASSWORD
+            </h2>
+          </div>
         </div>
 
-        <form onSubmit={handlePasswordSubmit}>
+        <form className="settings-form" onSubmit={handlePasswordSubmit}>
 
-          <div className="settings-field">
-            <label>CURRENT PASSWORD</label>
-
+          <div className="nc-field">
+            <label className="nc-field-label" htmlFor="settings-current-password">
+              CURRENT PASSWORD
+            </label>
             <input
+              id="settings-current-password"
+              className="nc-input"
               type="password"
               value={currentPassword}
               onChange={(e) =>
@@ -207,10 +225,13 @@ function Settings() {
             />
           </div>
 
-          <div className="settings-field">
-            <label>NEW PASSWORD</label>
-
+          <div className="nc-field">
+            <label className="nc-field-label" htmlFor="settings-new-password">
+              NEW PASSWORD
+            </label>
             <input
+              id="settings-new-password"
+              className="nc-input"
               type="password"
               value={newPassword}
               onChange={(e) =>
@@ -221,25 +242,26 @@ function Settings() {
           </div>
 
           {passwordMessage && (
-            <p className="settings-success">
+            <div className="settings-success">
               {passwordMessage}
-            </p>
+            </div>
           )}
 
           {passwordError && (
-            <p className="settings-error">
+            <div className="nc-error-banner">
               {passwordError}
-            </p>
+            </div>
           )}
 
-          <button
-            type="submit"
-            disabled={changingPassword}
-          >
-            {changingPassword
-              ? "Changing..."
-              : "Change Password"}
-          </button>
+          <div className="settings-actions">
+            <button
+              type="submit"
+              className="nc-btn nc-btn-primary"
+              disabled={changingPassword}
+            >
+              {changingPassword ? "CHANGING..." : "CHANGE PASSWORD"}
+            </button>
+          </div>
 
         </form>
 

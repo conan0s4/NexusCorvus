@@ -1,48 +1,51 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Landing.css";
 
 function Landing() {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const sections = document.querySelectorAll(".reveal-section");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+          }
+        });
+      },
+      {
+        threshold: 0.15,
+        rootMargin: "0px 0px -80px 0px",
+      }
+    );
+
+    sections.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToCapabilities = () => {
+    document.getElementById("capabilities")?.scrollIntoView({
+      behavior: "auto",
+      block: "start",
+    });
+  };
+
   return (
     <div className="landing-page">
 
       {/* =========================================
-          NAVIGATION
-          ========================================= */}
-
-      <nav className="landing-nav">
-
-        <div className="landing-brand">
-
-          <div>
-            <div className="brand-name">
-              NEXUSCORVUS
-            </div>
-
-            <div className="brand-subtitle">
-              DIGITAL FORENSICS WORKSPACE
-            </div>
-          </div>
-
-        </div>
-
-
-        <button
-          className="landing-login-button"
-          onClick={() => navigate("/login")}
-        >
-          ENTER WORKSPACE
-        </button>
-
-      </nav>
-
-
-      {/* =========================================
-          HERO
+          MAIN
           ========================================= */}
 
       <main className="landing-main">
+
+        {/* =========================================
+            HERO
+            ========================================= */}
 
         <section className="landing-hero">
 
@@ -79,13 +82,7 @@ function Landing() {
 
               <button
                 className="hero-secondary-button"
-                onClick={() =>
-                  document
-                    .getElementById("capabilities")
-                    ?.scrollIntoView({
-                      behavior: "smooth",
-                    })
-                }
+                onClick={scrollToCapabilities}
               >
                 EXPLORE NEXUSCORVUS
               </button>
@@ -234,7 +231,7 @@ function Landing() {
             ========================================= */}
 
         <section
-          className="landing-section"
+          className="landing-section reveal-section"
           id="capabilities"
         >
 
@@ -291,7 +288,7 @@ function Landing() {
               <p>
                 Review detection results, severity, affected
                 hosts, users, rules, and associated MITRE
-                ATT&CK techniques.
+                ATT&amp;CK techniques.
               </p>
 
             </article>
@@ -324,7 +321,7 @@ function Landing() {
             WORKFLOW
             ========================================= */}
 
-        <section className="workflow-section">
+        <section className="workflow-section reveal-section">
 
           <div className="section-label">
             INVESTIGATION FLOW
@@ -346,7 +343,7 @@ function Landing() {
               </strong>
 
               <small>
-                Logs & records
+                Logs &amp; records
               </small>
 
             </div>
@@ -366,7 +363,7 @@ function Landing() {
               </strong>
 
               <small>
-                Parse & examine
+                Parse &amp; examine
               </small>
 
             </div>
@@ -406,7 +403,7 @@ function Landing() {
               </strong>
 
               <small>
-                Correlate & understand
+                Correlate &amp; understand
               </small>
 
             </div>
@@ -420,7 +417,7 @@ function Landing() {
             CTA
             ========================================= */}
 
-        <section className="landing-cta">
+        <section className="landing-cta reveal-section">
 
           <div>
 

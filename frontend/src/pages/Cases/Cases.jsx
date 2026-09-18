@@ -1,7 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Cases.css";
 import { getCases, createCase } from "../../api/caseApi";
+
+const STATUS_ORDER = ["Investigating", "Open", "Reviewing", "Closed"];
+
+const statusClass = (status) => {
+  const value = String(status || "").toLowerCase();
+  if (value === "closed") {
+    return "nc-badge";
+  }
+  if (value === "reviewing") {
+    return "nc-badge warn";
+  }
+  return "nc-badge info";
+};
+
+const formatDate = (value) => {
+  if (!value) {
+    return "—";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+  return date.toLocaleString();
+};
 
 function Cases() {
   const navigate = useNavigate();
@@ -19,10 +43,6 @@ function Cases() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    loadCases();
-  }, []);
 
   const loadCases = async () => {
     try {
@@ -43,12 +63,10 @@ function Cases() {
     }
   };
 
-  /*
-   * OPEN CASE DETAIL
-   *
-   * The case ID is placed in the URL so CaseDetail
-   * can retrieve the correct case from the backend.
-   */
+  useEffect(() => {
+    loadCases();
+  }, []);
+
   const handleOpenCase = (caseId) => {
     navigate(`/cases/${caseId}`);
   };
@@ -87,330 +105,268 @@ function Cases() {
     }
   };
 
-  const filteredCases = cases.filter((caseItem) => {
-    const searchValue = search.toLowerCase();
+  const filteredCases = useMemo(() => {
+    const query = search.trim().toLowerCase();
 
-    const matchesSearch =
-      caseItem.case_name
-        ?.toLowerCase()
-        .includes(searchValue) ||
-      String(caseItem.id)
-        .toLowerCase()
-        .includes(searchValue);
+    return cases.filter((caseItem) => {
+      const matchesSearch =
+        !query ||
+        String(caseItem.case_name || "")
+          .toLowerCase()
+          .includes(query) ||
+        String(caseItem.id)
+          .toLowerCase()
+          .includes(query);
 
-    const matchesStatus =
-      statusFilter === "All" ||
-      caseItem.status?.toLowerCase() ===
-        statusFilter.toLowerCase();
+      const matchesStatus =
+        statusFilter === "All" ||
+        String(caseItem.status || "")
+          .toLowerCase() ===
+          statusFilter.toLowerCase();
 
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    });
+  }, [cases, search, statusFilter]);
 
   return (
     <div className="cases-page">
 
-      {/* Page Header */}
-      <header className="cases-header">
+      <header className="page-header">
         <div>
-          <h1>Cases</h1>
-          <p>Manage and investigate forensic cases</p>
+          <h1 className="page-title">Cases</h1>
+          <p className="page-subtitle">
+            Investigation cases and their lifecycle state
+          </p>
         </div>
 
-        <button
-          className="new-case-button"
-          onClick={() => {
-            setError("");
-            setShowCreateCase(true);
-          }}
-        >
-          <span>+</span>
-          New Case
-        </button>
+        <div className="page-header-actions">
+          <button
+            className="nc-btn nc-btn-primary"
+            onClick={() => {
+              setError("");
+              setShowCreateCase(true);
+            }}
+          >
+            + NEW CASE
+          </button>
+        </div>
       </header>
 
-      {/* Error */}
       {error && (
-        <div className="cases-error">
+        <div className="nc-error-banner cases-error">
           {error}
         </div>
       )}
 
-      {/* Filters */}
       <div className="cases-toolbar">
 
-        <div className="search-box">
-          <span className="search-icon">⌕</span>
-
+        <div className="nc-input-wrap">
           <input
+            className="nc-input"
             type="text"
-            placeholder="Search cases..."
+            placeholder="Search case names or IDs..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="filter-group">
-
+        <div className="status-filter-group">
           <button
-            className={`filter ${
+            className={`status-filter ${
               statusFilter === "All" ? "active" : ""
             }`}
             onClick={() => setStatusFilter("All")}
           >
-            All
+            ALL
           </button>
-
-          <button
-            className={`filter ${
-              statusFilter === "Investigating" ? "active" : ""
-            }`}
-            onClick={() => setStatusFilter("Investigating")}
-          >
-            Investigating
-          </button>
-
-          <button
-            className={`filter ${
-              statusFilter === "Open" ? "active" : ""
-            }`}
-            onClick={() => setStatusFilter("Open")}
-          >
-            Open
-          </button>
-
-          <button
-            className={`filter ${
-              statusFilter === "Reviewing" ? "active" : ""
-            }`}
-            onClick={() => setStatusFilter("Reviewing")}
-          >
-            Reviewing
-          </button>
-
-          <button
-            className={`filter ${
-              statusFilter === "Closed" ? "active" : ""
-            }`}
-            onClick={() => setStatusFilter("Closed")}
-          >
-            Closed
-          </button>
-
-        </div>
-
-        <div className="case-count">
-          {filteredCases.length}{" "}
-          {filteredCases.length === 1 ? "case" : "cases"}
-        </div>
-
-      </div>
-
-      {/* Cases Table */}
-      <div className="cases-table">
-
-        <div className="table-header">
-          <div>CASE ID</div>
-          <div>CASE NAME</div>
-          <div>STATUS</div>
-          <div>CREATED</div>
-          <div>UPDATED</div>
-        </div>
-
-        {loading ? (
-          <div className="cases-empty">
-            <p>Loading cases...</p>
-          </div>
-        ) : filteredCases.length === 0 ? (
-          <div className="cases-empty">
-            <p>No cases found</p>
-          </div>
-        ) : (
-          filteredCases.map((caseItem) => (
-
-            <div
-              className="case-row"
-              key={caseItem.id}
-              onClick={() => handleOpenCase(caseItem.id)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  handleOpenCase(caseItem.id);
-                }
-              }}
+          {STATUS_ORDER.map((item) => (
+            <button
+              key={item}
+              className={`status-filter ${
+                statusFilter === item ? "active" : ""
+              }`}
+              onClick={() => setStatusFilter(item)}
             >
+              {item.toUpperCase()}
+            </button>
+          ))}
+        </div>
 
-              <div className="case-id-cell">
-                CASE-{caseItem.id}
-              </div>
-
-              <div className="case-name-cell">
-                {caseItem.case_name}
-              </div>
-
-              <div>
-                <span className="case-status">
-                  {caseItem.status}
-                </span>
-              </div>
-
-              <div className="case-date">
-                {caseItem.created_at
-                  ? new Date(
-                      caseItem.created_at
-                    ).toLocaleString()
-                  : "-"}
-              </div>
-
-              <div className="case-date">
-                {caseItem.updated_at
-                  ? new Date(
-                      caseItem.updated_at
-                    ).toLocaleString()
-                  : "-"}
-              </div>
-
-            </div>
-
-          ))
-        )}
+        <span className="case-count">
+          {filteredCases.length}{" "}
+          {filteredCases.length === 1 ? "CASE" : "CASES"}
+        </span>
 
       </div>
 
-      {/* Create Case Modal */}
+      <div className="nc-panel cases-table-panel">
+
+        <div className="cases-table artifact-table">
+
+          <div className="artifact-row artifact-head cases-head">
+            <div>ID</div>
+            <div>NAME</div>
+            <div className="col-status">STATUS</div>
+            <div className="col-time">CREATED</div>
+            <div className="col-time">UPDATED</div>
+          </div>
+
+          {loading ? (
+            <div className="nc-empty">
+              <div className="nc-empty-title">Loading cases...</div>
+            </div>
+          ) : filteredCases.length === 0 ? (
+            <div className="nc-empty">
+              <div className="nc-empty-title">
+                {search || statusFilter !== "All"
+                  ? "No cases match the current filters"
+                  : "No cases registered"}
+              </div>
+              <div className="nc-empty-hint">
+                {search || statusFilter !== "All"
+                  ? "Adjust the search terms or status filter."
+                  : "Create an investigation case to begin organizing evidence, events, and findings."}
+              </div>
+            </div>
+          ) : (
+            filteredCases.map((caseItem) => (
+              <div
+                className="artifact-row artifact-item case-row"
+                key={caseItem.id}
+                onClick={() => handleOpenCase(caseItem.id)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    handleOpenCase(caseItem.id);
+                  }
+                }}
+              >
+                <div className="mono dim">
+                  #{String(caseItem.id).padStart(3, "0")}
+                </div>
+                <div className="row-name case-name-cell">
+                  {caseItem.case_name}
+                </div>
+                <div className="col-status">
+                  <span className={statusClass(caseItem.status)}>
+                    {caseItem.status || "—"}
+                  </span>
+                </div>
+                <div className="col-time mono dim">
+                  {formatDate(caseItem.created_at)}
+                </div>
+                <div className="col-time mono dim">
+                  {formatDate(caseItem.updated_at)}
+                </div>
+              </div>
+            ))
+          )}
+
+        </div>
+
+      </div>
+
       {showCreateCase && (
         <div
-          className="modal-overlay"
+          className="nc-modal-overlay"
           onClick={() => setShowCreateCase(false)}
         >
-
           <div
-            className="create-case-modal"
+            className="nc-modal"
             onClick={(e) => e.stopPropagation()}
           >
-
-            {/* Modal Header */}
-            <div className="modal-header">
-
-              <h2>
-                Create New Case
-              </h2>
-
+            <div className="nc-modal-header">
+              <div>
+                <div className="nc-modal-eyebrow">
+                  CASE REGISTRATION
+                </div>
+                <h2 className="nc-modal-title">
+                  Create New Case
+                </h2>
+              </div>
               <button
-                className="modal-close"
+                className="nc-modal-close"
                 onClick={() => setShowCreateCase(false)}
               >
                 ×
               </button>
-
             </div>
 
-            {/* Form */}
             <form onSubmit={handleCreateCase}>
+              <div className="nc-modal-body">
 
-              <div className="modal-body">
-
-                {/* Case Name */}
-                <div className="modal-form-group">
-
-                  <label htmlFor="case-name">
+                <div className="nc-field">
+                  <label className="nc-field-label" htmlFor="case-name">
                     CASE NAME
                   </label>
-
                   <input
                     id="case-name"
+                    className="nc-input"
                     type="text"
                     placeholder="Suspicious PowerShell Activity"
                     value={caseName}
-                    onChange={(e) =>
-                      setCaseName(e.target.value)
-                    }
+                    onChange={(e) => setCaseName(e.target.value)}
                   />
-
                 </div>
 
-                {/* Description */}
-                <div className="modal-form-group">
-
-                  <label htmlFor="case-description">
+                <div className="nc-field">
+                  <label className="nc-field-label" htmlFor="case-description">
                     DESCRIPTION
                   </label>
-
                   <textarea
                     id="case-description"
+                    className="nc-textarea"
                     placeholder="Brief description of the incident..."
                     value={description}
-                    onChange={(e) =>
-                      setDescription(e.target.value)
-                    }
+                    onChange={(e) => setDescription(e.target.value)}
                   />
-
                 </div>
 
-                {/* Status */}
-                <div className="modal-form-group">
-
-                  <label htmlFor="case-status">
+                <div className="nc-field">
+                  <label className="nc-field-label" htmlFor="case-status">
                     STATUS
                   </label>
-
                   <select
                     id="case-status"
+                    className="nc-select"
                     value={status}
-                    onChange={(e) =>
-                      setStatus(e.target.value)
-                    }
+                    onChange={(e) => setStatus(e.target.value)}
                   >
-
-                    <option value="Investigating">
-                      Investigating
-                    </option>
-
-                    <option value="Open">
-                      Open
-                    </option>
-
-                    <option value="Reviewing">
-                      Reviewing
-                    </option>
-
-                    <option value="Closed">
-                      Closed
-                    </option>
-
+                    {STATUS_ORDER.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
                   </select>
-
                 </div>
 
+                {error && showCreateCase && (
+                  <div className="nc-error-banner">
+                    {error}
+                  </div>
+                )}
+
               </div>
 
-              {/* Modal Footer */}
-              <div className="modal-footer">
-
+              <div className="nc-modal-footer">
                 <button
                   type="button"
-                  className="cancel-button"
+                  className="nc-btn"
                   onClick={() => setShowCreateCase(false)}
                 >
-                  Cancel
+                  CANCEL
                 </button>
-
                 <button
                   type="submit"
-                  className="create-button"
+                  className="nc-btn nc-btn-primary"
                   disabled={creating}
                 >
-                  {creating
-                    ? "Creating..."
-                    : "Create Case"}
+                  {creating ? "CREATING..." : "CREATE CASE"}
                 </button>
-
               </div>
-
             </form>
-
           </div>
-
         </div>
       )}
 

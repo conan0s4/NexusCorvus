@@ -8,11 +8,14 @@ import Login from "./pages/Login/Login";
 import MainLayout from "./layouts/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import Dashboard from "./pages/Dashboard/Dashboard";
 import Cases from "./pages/Cases/Cases";
+import Evidence from "./pages/Evidence/Evidence";
+import Events from "./pages/Events/Events";
 import LogAnalysis from "./pages/LogAnalysis/LogAnalysis";
 import SigmaDetection from "./pages/SigmaDetection/SigmaDetection";
 import CaseDetail from "./pages/Cases/CaseDetail/CaseDetail";
-import Settings from "./pages/Settings/Settings.jsx";
+import Settings from "./pages/Settings/Settings";
 import Landing from "./pages/Landing/Landing";
 
 function App() {
@@ -32,12 +35,32 @@ function App() {
         {/* AUTHENTICATED USERS ONLY */}
         <Route element={<ProtectedRoute />}>
 
-          {/* Sidebar */}
+          {/* Application shell */}
           <Route element={<MainLayout />}>
+
+            <Route
+              path="/dashboard"
+              element={<Dashboard />}
+            />
 
             <Route
               path="/cases"
               element={<Cases />}
+            />
+
+            <Route
+              path="/cases/:caseId"
+              element={<CaseDetail />}
+            />
+
+            <Route
+              path="/evidence"
+              element={<Evidence />}
+            />
+
+            <Route
+              path="/events"
+              element={<Events />}
             />
 
             <Route
@@ -51,13 +74,10 @@ function App() {
             />
 
             <Route
-              path="/cases/:caseId"
-              element={<CaseDetail />}
-            />
-            <Route
-              path="/Settings"
+              path="/settings"
               element={<Settings />}
             />
+
           </Route>
 
         </Route>

@@ -1,585 +1,91 @@
-/* =========================================
-   CASES PAGE
-   ========================================= */
-
 .cases-page {
-  width: 100%;
-  min-height: 100vh;
-  box-sizing: border-box;
-  padding: 1.25rem;
-  background-color: #0d1117;
-  color: #c9d1d9;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
-  overflow-x: hidden;
-}
-
-
-/* =========================================
-   PAGE HEADER
-   ========================================= */
-
-.cases-header {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px 36px;
+  min-width: 0;
+  background: var(--bg-app);
 }
-
-.cases-header h1 {
-  margin: 0;
-  color: #f0f6fc;
-  font-size: 1.15rem;
-  font-weight: 600;
-  text-align: left;
-}
-
-.cases-header p {
-  margin: 0.2rem 0 0;
-  color: #8b949e;
-  font-size: 0.7rem;
-}
-
-
-/* =========================================
-   NEW CASE BUTTON
-   ========================================= */
-
-.new-case-button {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  background-color: #21262d;
-  border: 1px solid #30363d;
-  color: #c9d1d9;
-  padding: 0.35rem 0.65rem;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  cursor: pointer;
-}
-
-.new-case-button span {
-  font-size: 0.9rem;
-}
-
-.new-case-button:hover {
-  background-color: #30363d;
-}
-
-
-/* =========================================
-   ERROR
-   ========================================= */
 
 .cases-error {
-  margin-bottom: 0.75rem;
-  padding: 0.5rem 0.6rem;
-  background-color: rgba(248, 81, 73, 0.1);
-  border: 1px solid rgba(248, 81, 73, 0.3);
-  border-radius: 4px;
-  color: #f85149;
-  font-size: 0.7rem;
+  margin-bottom: 2px;
 }
-
-
-/* =========================================
-   TOOLBAR
-   ========================================= */
 
 .cases-toolbar {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.75rem;
-  width: 100%;
-  box-sizing: border-box;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-
-/* =========================================
-   SEARCH
-   ========================================= */
-
-.search-box {
+.status-filter-group {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  background-color: #161b22;
-  border: 1px solid #21262d;
-  border-radius: 4px;
-  padding: 0.2rem 0.4rem;
-  width: 190px;
-  box-sizing: border-box;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-panel);
 }
 
-.search-icon {
-  color: #484f58;
-  font-size: 0.85rem;
-}
-
-.search-box input {
-  width: 100%;
-  border: none;
-  outline: none;
+.status-filter {
+  height: 22px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 2px;
   background: transparent;
-  color: #c9d1d9;
-  font-size: 0.7rem;
-}
-
-.search-box input::placeholder {
-  color: #484f58;
-}
-
-
-/* =========================================
-   STATUS FILTERS
-   ========================================= */
-
-.filter-group {
-  display: flex;
-  align-items: center;
-  background-color: #161b22;
-  border: 1px solid #21262d;
-  border-radius: 4px;
-  padding: 0.1rem;
-}
-
-.filter {
-  background: transparent;
-  border: none;
-  color: #8b949e;
-  padding: 0.2rem 0.4rem;
-  border-radius: 3px;
-  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
 }
 
-.filter:hover {
-  color: #c9d1d9;
+.status-filter:hover {
+  color: var(--text-dim);
 }
 
-.filter.active {
-  background-color: #21262d;
-  color: #f0f6fc;
+.status-filter.active {
+  background: var(--bg-active);
+  color: var(--accent);
+  border-color: var(--accent-border);
 }
-
-
-/* =========================================
-   CASE COUNT
-   ========================================= */
 
 .case-count {
   margin-left: auto;
-  color: #484f58;
-  font-size: 0.65rem;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
   white-space: nowrap;
 }
 
-
-/* =========================================
-   CASES TABLE
-   ========================================= */
+.cases-table-panel {
+  overflow: hidden;
+}
 
 .cases-table {
-  width: 100%;
-  background-color: #161b22;
-  border: 1px solid #21262d;
-  border-radius: 4px;
-  overflow: hidden;
+  padding: 0;
 }
 
-
-/* =========================================
-   TABLE STRUCTURE
-   ========================================= */
-
-.table-header,
+.cases-head,
 .case-row {
-  display: grid;
   grid-template-columns:
-    0.8fr
-    2fr
+    0.6fr
+    minmax(180px, 2fr)
     1fr
-    1.4fr
-    1.4fr;
-
-  align-items: center;
-  width: 100%;
-  box-sizing: border-box;
+    1.2fr
+    1.2fr;
+  padding: 0 14px;
 }
 
-.table-header > div,
-.case-row > div {
-  min-width: 0;
-  padding: 0.35rem 0.5rem;
-  box-sizing: border-box;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-
-/* =========================================
-   TABLE HEADER
-   ========================================= */
-
-.table-header {
-  min-height: 30px;
-  border-bottom: 1px solid #21262d;
-  color: #8b949e;
-  font-size: 0.6rem;
-  font-weight: 500;
-}
-
-
-/* =========================================
-   CASE ROW
-   ========================================= */
-
-.case-row {
-  min-height: 38px;
-  border-bottom: 1px solid #21262d;
-  font-size: 0.7rem;
-
-  /* Case rows are clickable */
-  cursor: pointer;
-
-  /* Small transition for hover/focus */
-  transition: background-color 0.12s ease;
-}
-
-.case-row:last-child {
-  border-bottom: none;
-}
-
-
-/* Hover state */
-
-.case-row:hover {
-  background-color: #1c2128;
-}
-
-
-/* Keyboard focus */
-
-.case-row:focus {
-  outline: none;
-  background-color: #1c2128;
-}
-
-.case-row:focus-visible {
-  outline: 1px solid #484f58;
-  outline-offset: -1px;
-}
-
-
-/* =========================================
-   CASE CELLS
-   ========================================= */
-
-.case-id-cell {
-  color: #8b949e;
+.cases-head {
+  background: var(--bg-panel-2);
 }
 
 .case-name-cell {
-  color: #c9d1d9;
   font-weight: 500;
-}
-
-.case-date {
-  color: #8b949e;
-  font-size: 0.65rem;
-}
-
-
-/* =========================================
-   CASE STATUS
-   ========================================= */
-
-.case-status {
-  color: #c9d1d9;
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-
-/* =========================================
-   EMPTY STATE
-   ========================================= */
-
-.cases-empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100px;
-  color: #484f58;
-  font-size: 0.7rem;
-}
-
-.cases-empty p {
-  margin: 0;
-}
-
-
-/* =========================================
-   MODAL OVERLAY
-   ========================================= */
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: rgba(0, 0, 0, 0.65);
-  z-index: 1000;
-  padding: 1rem;
-  box-sizing: border-box;
-}
-
-
-/* =========================================
-   CREATE CASE MODAL
-   ========================================= */
-
-.create-case-modal {
-  width: 100%;
-  max-width: 460px;
-  background-color: #0d1117;
-  border: 1px solid #30363d;
-  border-radius: 5px;
-  box-sizing: border-box;
-}
-
-
-/* =========================================
-   MODAL HEADER
-   ========================================= */
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.7rem 0.8rem;
-  border-bottom: 1px solid #21262d;
-}
-
-.modal-header h2 {
-  margin: 0;
-  color: #f0f6fc;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.modal-close {
-  background: transparent;
-  border: none;
-  color: #8b949e;
-  font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.modal-close:hover {
-  color: #f0f6fc;
-}
-
-
-/* =========================================
-   MODAL BODY
-   ========================================= */
-
-.modal-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  padding: 0.8rem;
-}
-
-.modal-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-
-.modal-form-group label {
-  color: #8b949e;
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-.modal-form-group input,
-.modal-form-group textarea,
-.modal-form-group select {
-  width: 100%;
-  box-sizing: border-box;
-  background-color: #161b22;
-  border: 1px solid #21262d;
-  border-radius: 4px;
-  color: #c9d1d9;
-  padding: 0.4rem 0.5rem;
-  font-size: 0.7rem;
-  font-family: inherit;
-  outline: none;
-}
-
-.modal-form-group input::placeholder,
-.modal-form-group textarea::placeholder {
-  color: #484f58;
-}
-
-.modal-form-group input:focus,
-.modal-form-group textarea:focus,
-.modal-form-group select:focus {
-  border-color: #484f58;
-}
-
-.modal-form-group textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-.modal-form-group select {
-  cursor: pointer;
-}
-
-
-/* =========================================
-   MODAL FOOTER
-   ========================================= */
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.4rem;
-  padding: 0.6rem 0.8rem;
-  border-top: 1px solid #21262d;
-}
-
-
-/* =========================================
-   CANCEL BUTTON
-   ========================================= */
-
-.cancel-button {
-  background-color: transparent;
-  border: 1px solid #30363d;
-  color: #8b949e;
-  padding: 0.3rem 0.55rem;
-  border-radius: 4px;
-  font-size: 0.65rem;
-  cursor: pointer;
-}
-
-.cancel-button:hover {
-  background-color: #21262d;
-  color: #c9d1d9;
-}
-
-
-/* =========================================
-   CREATE BUTTON
-   ========================================= */
-
-.create-button {
-  background-color: #21262d;
-  border: 1px solid #30363d;
-  color: #c9d1d9;
-  padding: 0.3rem 0.55rem;
-  border-radius: 4px;
-  font-size: 0.65rem;
-  cursor: pointer;
-}
-
-.create-button:hover {
-  background-color: #30363d;
-}
-
-.create-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-
-/* =========================================
-   RESPONSIVE
-   ========================================= */
-
-@media (max-width: 900px) {
-
-  .cases-toolbar {
-    flex-wrap: wrap;
-  }
-
-  .case-count {
-    margin-left: 0;
-  }
-
-  .table-header,
-  .case-row {
-    grid-template-columns:
-      0.8fr
-      1.8fr
-      1fr
-      1.3fr
-      1.3fr;
-  }
-
-}
-
-
-@media (max-width: 700px) {
-
-  .cases-page {
-    padding: 0.75rem;
-  }
-
-  .cases-toolbar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .search-box {
-    width: 100%;
-  }
-
-  .filter-group {
-    width: 100%;
-    overflow-x: auto;
-  }
-
-  .filter {
-    white-space: nowrap;
-  }
-
-  .case-count {
-    margin-left: 0;
-  }
-
-  .cases-table {
-    overflow-x: auto;
-  }
-
-  .table-header,
-  .case-row {
-    min-width: 700px;
-  }
-
-}
-
-
-@media (max-width: 500px) {
-
-  .cases-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .new-case-button {
-    width: 100%;
-    justify-content: center;
-  }
-
 }

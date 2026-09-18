@@ -3,17 +3,13 @@
   top: 0;
   left: 0;
 
-  width: 216px;
+  width: var(--sidebar-w);
   height: 100vh;
 
   box-sizing: border-box;
 
-  background: #1d2127;
-  border-right: 1px solid #1d2127;
-
-  color: #718096;
-
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
 
   display: flex;
   flex-direction: column;
@@ -21,19 +17,15 @@
   z-index: 1000;
 }
 
-/* Brand */
-
 .sidebar-brand {
-  height: 72px;
-
+  height: var(--topbar-h);
   padding: 0 14px;
-
-  box-sizing: border-box;
 
   display: flex;
   align-items: center;
 
-  border-bottom: 1px solid #24282e;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .sidebar-logo {
@@ -46,8 +38,8 @@
   align-items: center;
   justify-content: center;
 
-  background: #4d86ad;
-  border-radius: 3px;
+  background: var(--accent-anchor);
+  border-radius: var(--radius-sm);
 
   overflow: hidden;
 }
@@ -59,141 +51,99 @@
 
 .brand-text {
   margin-left: 9px;
+  min-width: 0;
 }
 
 .brand-name {
-  color: #e2e8ee;
-
-  font-size: 20px;
+  color: var(--text-strong);
+  font-size: 14px;
   font-weight: 600;
-
-  line-height: 14px;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
 }
 
 .brand-subtitle {
-  margin-top: 4px;
-
-  color: #4b6480;
-
-  font-family: "Courier New", monospace;
-  font-size: 10px;
-  line-height: 10px;
-
-  letter-spacing: 1.2px;
+  margin-top: 2px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
 }
-
-/* Navigation */
 
 .sidebar-nav {
   padding: 10px 9px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.nav-group {
+  margin-bottom: 14px;
+}
+
+.nav-group:last-child {
+  margin-bottom: 0;
+}
+
+.nav-group-label {
+  padding: 0 10px;
+  margin-bottom: 4px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
 }
 
 .sidebar-item {
-  height: 35px;
-
+  height: 30px;
   margin-bottom: 2px;
-
   padding: 0 10px;
 
   box-sizing: border-box;
 
   display: flex;
   align-items: center;
-
   gap: 9px;
 
-  border-radius: 3px;
+  border-radius: var(--radius-sm);
 
-  color: #526176;
-
+  color: var(--text-muted);
   text-decoration: none;
 
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
 
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
 .sidebar-item img {
-  width: 16px;
-  height: 16px;
-
-  color: currentColor;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
 }
 
 .sidebar-item:hover {
-  background: #171d25;
-  color: #7796b1;
+  background: var(--bg-hover);
+  color: var(--text-dim);
 }
 
 .sidebar-item.active {
-  background: #3c4b5d;
-  color: #4d9bd0;
+  background: var(--accent-tint);
+  color: var(--accent-bright);
+  border-left: 2px solid var(--accent);
+  padding-left: 8px;
 }
 
-.sidebar-divider {
-  height: 1px;
-
-  margin: 9px 4px;
-
-  background: #24282e;
-}
-
-/* User */
-
-.sidebar-user {
-  margin-top: auto;
-
-  min-height: 65px;
-
-  padding: 0 18px;
-
-  box-sizing: border-box;
-
-  display: flex;
-  align-items: center;
-
-  border-top: 1px solid #24282e;
-}
-
-.user-avatar {
-  width: 24px;
-  height: 24px;
-
+.sidebar-footer {
   flex-shrink: 0;
-
+  padding: 10px 14px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
 
-  background: #16202a;
-  border: 1px solid #294052;
-  border-radius: 3px;
-
-  color: #4d9bd0;
-
-  font-family: "Courier New", monospace;
+  font-family: var(--font-mono);
   font-size: 8px;
-}
-
-
-
-.logout-button {
-  margin-top: 330px;
-  width: 100%;
-  padding: 9px 12px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: #4b6480;
-  font-size: 14px;
-  text-align: center;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.logout-button:hover {
-  background: #4b6480;
-  color: #222;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
 }

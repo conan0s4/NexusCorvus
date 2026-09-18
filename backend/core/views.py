@@ -11,6 +11,7 @@ from django.contrib.auth import logout
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 
+
 from . import crud
 from .serializers import (
     CaseSerializer,
@@ -248,7 +249,18 @@ class CaseDetailView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        crud.delete_case(case_id)
+        try:
+            crud.delete_case(case_id)
+        except ValueError as error:
+            return Response(
+                {'detail': str(error)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except OSError as error:
+            return Response(
+                {'detail': f"Failed to delete case artifacts: {error}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         return Response(
             status=status.HTTP_204_NO_CONTENT
@@ -282,17 +294,47 @@ class EventListCreateView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        case = crud.get_case(
-            request.data.get('case_id')
-        )
+        case_id = request.data.get('case_id')
+        file_name = request.data.get('file_name')
+        content = request.data.get('content')
 
-        event = crud.create_event(
-            case=case,
-            file_name=request.data.get('file_name'),
-            file_type=request.data.get('file_type'),
-            file_path=request.data.get('file_path'),
-            file_size=request.data.get('file_size')
-        )
+        if not case_id:
+            return Response(
+                {'detail': 'case_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not file_name:
+            return Response(
+                {'detail': 'file_name is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not content:
+            return Response(
+                {'detail': 'content is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            case = crud.get_case(case_id)
+        except Exception:
+            return Response(
+                {'detail': 'Case not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            event = crud.create_event_file(
+                case=case,
+                file_name=file_name,
+                json_content=content
+            )
+        except FileExistsError as error:
+            return Response(
+                {'detail': str(error)},
+                status=status.HTTP_409_CONFLICT
+            )
 
         serializer = EventSerializer(event)
 
@@ -325,7 +367,18 @@ class EventDetailView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        crud.delete_event(event_id)
+        try:
+            crud.delete_event(event_id)
+        except ValueError as error:
+            return Response(
+                {'detail': str(error)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except OSError as error:
+            return Response(
+                {'detail': f"Failed to delete event artifacts: {error}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         return Response(
             status=status.HTTP_204_NO_CONTENT
@@ -568,18 +621,50 @@ class EvidenceFileListCreateView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        case = crud.get_case(
-            request.data.get('case_id')
-        )
+        case_id = request.data.get('case_id')
+        uploaded_file = request.FILES.get('file')
 
-        evidence_file = crud.create_evidence_file(
-            case=case,
-            uploaded_by=request.user,
-            file_name=request.data.get('file_name'),
-            file_type=request.data.get('file_type'),
-            file_path=request.data.get('file_path'),
-            file_size=request.data.get('file_size')
-        )
+        if not case_id:
+            return Response(
+                {'detail': 'case_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not uploaded_file:
+            return Response(
+                {'detail': 'EVTX file is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        file_name = uploaded_file.name.lower()
+
+        if not file_name.endswith('.evtx'):
+            return Response(
+                {'detail': 'Only EVTX files are allowed.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            case = crud.get_case(case_id)
+
+        except Exception:
+            return Response(
+                {'detail': 'Case not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            evidence_file = crud.create_evidence_file(
+                case=case,
+                uploaded_by=request.user,
+                uploaded_file=uploaded_file
+            )
+
+        except FileExistsError as error:
+            return Response(
+                {'detail': str(error)},
+                status=status.HTTP_409_CONFLICT
+            )
 
         serializer = EvidenceFileSerializer(
             evidence_file
@@ -589,7 +674,6 @@ class EvidenceFileListCreateView(APIView):
             serializer.data,
             status=status.HTTP_201_CREATED
         )
-
 
 class EvidenceFileDetailView(APIView):
 
@@ -617,9 +701,20 @@ class EvidenceFileDetailView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        crud.delete_evidence_file(
-            evidence_file_id
-        )
+        try:
+            crud.delete_evidence_file(
+                evidence_file_id
+            )
+        except ValueError as error:
+            return Response(
+                {'detail': str(error)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except OSError as error:
+            return Response(
+                {'detail': f"Failed to delete evidence file: {error}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         return Response(
             status=status.HTTP_204_NO_CONTENT

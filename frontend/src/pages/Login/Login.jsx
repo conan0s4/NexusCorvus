@@ -34,29 +34,28 @@ function Login() {
 
   return (
     <div className="login-page">
-      <div className="login-container">
+      <div className="login-card">
 
-        {/* Logo */}
-        <div className="logo-box">
+        <div className="login-logo">
           <img src={shieldLogo} alt="NexusCorvus" />
         </div>
 
-        <h1>NexusCorvus</h1>
+        <div className="login-brand">
+          <h1>NexusCorvus</h1>
+          <p className="login-subtitle">
+            Digital Forensics Investigation Platform
+          </p>
+        </div>
 
-        <p className="subtitle">
-          Digital Forensics INVESTIGATION PLATFORM
-        </p>
-
-        {/* Login Form */}
         <form className="login-form" onSubmit={handleSubmit}>
 
-          <div className="form-group">
-            <label htmlFor="username">
-              USERNAME&nbsp; / &nbsp;EMAIL
+          <div className="nc-field">
+            <label className="nc-field-label" htmlFor="username">
+              USERNAME / EMAIL
             </label>
-
             <input
               id="username"
+              className="nc-input"
               type="text"
               placeholder="analyst@corp.local"
               autoComplete="username"
@@ -65,13 +64,13 @@ function Login() {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">
+          <div className="nc-field">
+            <label className="nc-field-label" htmlFor="password">
               PASSWORD
             </label>
-
             <input
               id="password"
+              className="nc-input"
               type="password"
               placeholder="••••••••••••"
               autoComplete="current-password"
@@ -81,23 +80,27 @@ function Login() {
           </div>
 
           {error && (
-            <p className="login-error">
+            <div className="nc-error-banner">
               {error}
-            </p>
+            </div>
           )}
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Signing In..." : "Sign In"}
+          <button
+            type="submit"
+            className="nc-btn nc-btn-primary nc-btn-lg login-submit"
+            disabled={loading}
+          >
+            {loading ? "SIGNING IN..." : "SIGN IN"}
           </button>
 
         </form>
 
-        {/* Security Notice */}
-        <div className="security-notice">
+        <div className="login-notice">
           <p>Authorized personnel only</p>
-          <p>security specialist | “Flow state is where hesitation disappears—only steady intent remains, quiet enough to hear your own precision.”</p>
-          <br></br>
-          <p>By Alexander</p>
+          <p className="login-quote">
+            "Flow state is where hesitation disappears—only steady intent remains, quiet enough to hear your own precision."
+          </p>
+          <p className="login-author">— Alexander</p>
         </div>
 
       </div>
