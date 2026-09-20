@@ -16,6 +16,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 EVIDENCE_ROOT = BASE_DIR / "Evidence"
 EVENT_ROOT = BASE_DIR / "Event"
+SIGMA_RULES_ROOT = BASE_DIR / "sigma_tool" / "sigma"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
@@ -44,6 +45,8 @@ INSTALLED_APPS = [
     'core',
 
     'chainsaw_app',
+
+    'sigma_app',
 ]
 
 

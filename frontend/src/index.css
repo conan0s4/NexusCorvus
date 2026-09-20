@@ -388,6 +388,18 @@ pre {
   font-size: 11px;
 }
 
+.nc-success-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(63, 185, 80, 0.35);
+  border-radius: var(--radius-sm);
+  background: var(--green-tint);
+  color: var(--green);
+  font-size: 11px;
+}
+
 .nc-selected-bar {
   display: flex;
   align-items: center;

@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('core.urls')),
     path('api/chainsaw/', include('chainsaw_app.urls')),
+    path('api/sigma/', include('sigma_app.urls')),
 
 ]

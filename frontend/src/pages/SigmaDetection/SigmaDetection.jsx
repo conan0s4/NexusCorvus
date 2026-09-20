@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./SigmaDetection.css";
 
-import {
-  getEvidenceFiles,
-} from "../../api/evidenceApi.js";
+import { getEvidenceFiles } from "../../api/evidenceApi.js";
+import { getCases } from "../../api/caseApi.js";
+import { detectWithSigma, getSigmaMeta } from "../../api/sigmaApi.js";
+import { createDetection } from "../../api/detectionApi.js";
 
 function SigmaDetection() {
   const navigate = useNavigate();
@@ -20,19 +21,36 @@ function SigmaDetection() {
   const [isLoadingEvidence, setIsLoadingEvidence] = useState(true);
 
   /* =========================
+     Rule Meta (filters)
+  ========================= */
+
+  const [meta, setMeta] = useState({
+    levels: [],
+    categories: [],
+  });
+
+  const [levelFilter, setLevelFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+
+  /* =========================
      Sigma Detection
   ========================= */
 
-  const [output, setOutput] = useState("");
+  const [result, setResult] = useState(null);
   const [detectionError, setDetectionError] = useState("");
   const [isDetecting, setIsDetecting] = useState(false);
+  const [expanded, setExpanded] = useState(new Set());
 
   /* =========================
-     Save
+     Save to Case
   ========================= */
 
+  const [cases, setCases] = useState([]);
   const [showSaveForm, setShowSaveForm] = useState(false);
-  const [caseName, setCaseName] = useState("");
+  const [selectedCase, setSelectedCase] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [saveSuccess, setSaveSuccess] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   /* =========================
      Load Evidence
@@ -66,6 +84,19 @@ function SigmaDetection() {
 
   useEffect(() => {
     loadEvidence();
+
+    getSigmaMeta()
+      .then((data) =>
+        setMeta({
+          levels: data.levels || [],
+          categories: data.categories || [],
+        })
+      )
+      .catch(() => {});
+
+    getCases()
+      .then((data) => setCases(data || []))
+      .catch(() => {});
   }, []);
 
   /* =========================
@@ -75,23 +106,19 @@ function SigmaDetection() {
   const handleSelectEvidence = (file) => {
     setSelectedEvidence(file);
 
-    setOutput("");
+    setResult(null);
     setDetectionError("");
   };
-
-  /* =========================
-     Clear Evidence
-  ========================= */
 
   const handleClearEvidence = () => {
     setSelectedEvidence(null);
 
-    setOutput("");
+    setResult(null);
     setDetectionError("");
   };
 
   /* =========================
-     Sigma Detection
+     Run Sigma Detection
   ========================= */
 
   const handleRunDetection = async () => {
@@ -104,23 +131,26 @@ function SigmaDetection() {
 
     setIsDetecting(true);
     setDetectionError("");
-    setOutput("");
+    setResult(null);
+    setExpanded(new Set());
 
     try {
-      console.log(
-        "Sigma detection evidence:",
-        selectedEvidence.id
-      );
+      const data = await detectWithSigma({
+        evidence_file_id: selectedEvidence.id,
+        level: levelFilter || null,
+        category: categoryFilter || null,
+      });
 
-      setOutput(
-        `Selected evidence:\n${selectedEvidence.file_name}\n\n` +
-        `Evidence ID: ${selectedEvidence.id}\n\n` +
-        `Sigma detection API is not connected yet.`
-      );
+      if (data && data.status === "success") {
+        setResult(data);
+      } else {
+        setDetectionError(
+          data?.error || "Sigma detection failed."
+        );
+      }
     } catch (err) {
       setDetectionError(
-        err.message ||
-          "Failed to run Sigma detection."
+        err.message || "Failed to run Sigma detection."
       );
     } finally {
       setIsDetecting(false);
@@ -128,25 +158,234 @@ function SigmaDetection() {
   };
 
   /* =========================
-     Save Detection Results
+     Results Expand/Collapse
   ========================= */
 
-  const handleSave = (e) => {
+  const toggleMatch = (index) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+
+      return next;
+    });
+  };
+
+  /* =========================
+     Save Matches as Detections
+  ========================= */
+
+  const buildDetectionPayload = (match, caseId) => {
+    const rule = match.rule || {};
+    const first = (match.matches && match.matches[0]) || {};
+    const data = first.data || {};
+    const logsource = rule.logsource || {};
+
+    const join = (values) =>
+      Array.isArray(values) ? values.join(", ") : "";
+
+    return {
+      case_id: Number(caseId),
+      time: first.time || new Date().toISOString(),
+      event_type: String(
+        logsource.category || logsource.service || "sigma"
+      ).slice(0, 100),
+      description:
+        `${rule.title || ""}\n\n${rule.description || ""}` +
+        `\n\nRule: ${rule.rule_file || ""}`,
+      host: first.computer || data.Computer || "",
+      user:
+        first.user ||
+        data.TargetUserName ||
+        data.SubjectUserName ||
+        data.User ||
+        "",
+      severity: String(rule.level || "informational").slice(0, 50),
+      detection_rule: String(
+        rule.title || rule.rule_file || "Sigma match"
+      ).slice(0, 255),
+      rule_id: String(rule.id || "").slice(0, 255),
+      mitre_tactic: join(rule.mitre_tactics).slice(0, 255),
+      mitre_technique: join(rule.mitre_techniques).slice(0, 255),
+    };
+  };
+
+  const handleSave = async (e) => {
     e.preventDefault();
 
-    console.log(
-      "Saving detection results to case:",
-      caseName
-    );
+    setSaveError("");
+    setSaveSuccess("");
 
-    console.log(
-      "Detection output:",
-      output
-    );
+    if (!selectedCase) {
+      setSaveError("Please select a case.");
+      return;
+    }
 
-    setShowSaveForm(false);
-    setCaseName("");
+    if (!result || !result.matches || result.matches.length === 0) {
+      setSaveError("No detection results to save.");
+      return;
+    }
+
+    setIsSaving(true);
+
+    let saved = 0;
+    let failed = 0;
+
+    try {
+      for (const match of result.matches) {
+        try {
+          await createDetection(
+            buildDetectionPayload(match, selectedCase)
+          );
+          saved += 1;
+        } catch {
+          failed += 1;
+        }
+      }
+    } finally {
+      setIsSaving(false);
+    }
+
+    if (failed === 0) {
+      setSaveSuccess(
+        `Saved ${saved} detection${saved === 1 ? "" : "s"} to the case.`
+      );
+      setShowSaveForm(false);
+      setSelectedCase("");
+    } else {
+      setSaveError(
+        `Saved ${saved} detection${saved === 1 ? "" : "s"}, ` +
+        `${failed} failed. You can retry from Detections.`
+      );
+    }
   };
+
+  /* =========================
+     Render Helpers
+  ========================= */
+
+  const renderMatch = (match, index) => {
+    const rule = match.rule || {};
+    const isOpen = expanded.has(index);
+
+    return (
+      <div className="sigma-match" key={index}>
+        <button
+          type="button"
+          className="sigma-match-header"
+          onClick={() => toggleMatch(index)}
+        >
+          <span
+            className={`sigma-sev sev-${rule.level || "informational"}`}
+          >
+            {rule.level || "info"}
+          </span>
+          <span className="sigma-match-title">
+            {rule.title || "Untitled rule"}
+          </span>
+          <span className="sigma-match-count">
+            {match.match_count}{" "}
+            hit{match.match_count === 1 ? "" : "s"}
+            {match.truncated ? " (truncated)" : ""}
+          </span>
+          <span className="sigma-match-toggle">
+            {isOpen ? "▾" : "▸"}
+          </span>
+        </button>
+
+        {isOpen && (
+          <div className="sigma-match-body">
+            {rule.description && (
+              <p className="sigma-match-desc">
+                {rule.description}
+              </p>
+            )}
+
+            <div className="sigma-match-meta">
+              {rule.rule_file && (
+                <span className="sigma-meta-chip mono">
+                  {rule.rule_file}
+                </span>
+              )}
+
+              {rule.mitre_techniques &&
+                rule.mitre_techniques.map((t) => (
+                  <span key={t} className="sigma-meta-chip mitre">
+                    {t}
+                  </span>
+                ))}
+
+              {rule.mitre_tactics &&
+                rule.mitre_tactics.map((t) => (
+                  <span key={t} className="sigma-meta-chip tactic">
+                    {t}
+                  </span>
+                ))}
+            </div>
+
+            {rule.references &&
+              rule.references.length > 0 && (
+                <ul className="sigma-references">
+                  {rule.references.map((ref, idx) => (
+                    <li key={idx}>
+                      <span className="mono">{ref}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+            {match.matches && match.matches.length > 0 && (
+              <table className="sigma-events-table">
+                <thead>
+                  <tr>
+                    <th>TIME</th>
+                    <th>EVENT ID</th>
+                    <th>CHANNEL</th>
+                    <th>COMPUTER</th>
+                    <th>USER</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {match.matches.map((m, idx) => (
+                    <tr key={idx}>
+                      <td className="mono">
+                        {m.time || "—"}
+                      </td>
+                      <td>{m.event_id ?? "—"}</td>
+                      <td>{m.channel || "—"}</td>
+                      <td>{m.computer || "—"}</td>
+                      <td>{m.user || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {match.matches && match.matches.length > 0 && (
+              <details className="sigma-event-details">
+                <summary>Show matched event fields</summary>
+                <pre className="sigma-event-json">
+                  {JSON.stringify(
+                    match.matches[0].data || {},
+                    null,
+                    2
+                  )}
+                </pre>
+              </details>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  /* =========================
+     Render
+  ========================= */
 
   return (
     <div className="sigma-page">
@@ -282,6 +521,50 @@ function SigmaDetection() {
 
         <div className="sigma-detection-panel">
 
+          <div className="sigma-filters">
+            <div className="nc-field">
+              <label className="nc-field-label" htmlFor="sigmaLevel">
+                MINIMUM LEVEL
+              </label>
+              <select
+                id="sigmaLevel"
+                className="nc-select"
+                value={levelFilter}
+                onChange={(e) =>
+                  setLevelFilter(e.target.value)
+                }
+              >
+                <option value="">All levels</option>
+                {meta.levels.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="nc-field">
+              <label className="nc-field-label" htmlFor="sigmaCategory">
+                CATEGORY
+              </label>
+              <select
+                id="sigmaCategory"
+                className="nc-select"
+                value={categoryFilter}
+                onChange={(e) =>
+                  setCategoryFilter(e.target.value)
+                }
+              >
+                <option value="">All categories</option>
+                {meta.categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div className="sigma-detection-description">
             {selectedEvidence
               ? `Run Sigma rules against ${selectedEvidence.file_name}`
@@ -307,25 +590,99 @@ function SigmaDetection() {
           </div>
         )}
 
-        {output && (
-          <pre className="sigma-output">
-            {output}
-          </pre>
-        )}
-
-        {output && (
-          <div className="sigma-save-row">
-            <button
-              type="button"
-              className="nc-btn nc-btn-lg"
-              onClick={() => setShowSaveForm(true)}
-            >
-              SAVE DETECTION RESULTS
-            </button>
-          </div>
-        )}
-
       </section>
+
+      {/* =========================
+          Results
+      ========================= */}
+
+      {result && result.status === "success" && (
+        <section className="nc-panel sigma-section">
+
+          <div className="panel-header">
+            <div>
+              <div className="panel-eyebrow">
+                SCAN COMPLETE
+              </div>
+              <h2 className="panel-title">
+                DETECTION RESULTS ({result.matches.length})
+              </h2>
+            </div>
+          </div>
+
+          <div className="sigma-stats">
+            <div className="sigma-stat">
+              <span className="sigma-stat-value">
+                {result.events_processed}
+              </span>
+              <span className="sigma-stat-label">
+                EVENTS
+              </span>
+            </div>
+            <div className="sigma-stat">
+              <span className="sigma-stat-value">
+                {result.rules_evaluated}
+              </span>
+              <span className="sigma-stat-label">
+                RULES
+              </span>
+            </div>
+            <div className="sigma-stat">
+              <span className="sigma-stat-value">
+                {result.rules_skipped}
+              </span>
+              <span className="sigma-stat-label">
+                SKIPPED
+              </span>
+            </div>
+            <div className="sigma-stat">
+              <span className="sigma-stat-value">
+                {result.duration_seconds}s
+              </span>
+              <span className="sigma-stat-label">
+                DURATION
+              </span>
+            </div>
+            <div className="sigma-stat">
+              <span className="sigma-stat-value">
+                {result.events_malformed}
+              </span>
+              <span className="sigma-stat-label">
+                MALFORMED
+              </span>
+            </div>
+          </div>
+
+          {result.matches.length === 0 ? (
+            <div className="nc-empty sigma-empty">
+              <div className="nc-empty-title">
+                No Sigma rules matched
+              </div>
+              <div className="nc-empty-hint">
+                Try relaxing the level/category filters or use a different
+                evidence file.
+              </div>
+            </div>
+          ) : (
+            <div className="sigma-matches-list">
+              {result.matches.map(renderMatch)}
+            </div>
+          )}
+
+          {result.matches.length > 0 && (
+            <div className="sigma-save-row">
+              <button
+                type="button"
+                className="nc-btn nc-btn-lg"
+                onClick={() => setShowSaveForm(true)}
+              >
+                SAVE DETECTION RESULTS
+              </button>
+            </div>
+          )}
+
+        </section>
+      )}
 
       {/* =========================
           Save Modal
@@ -343,7 +700,7 @@ function SigmaDetection() {
             <div className="nc-modal-header">
               <div>
                 <div className="nc-modal-eyebrow">
-                  DETECTION OUTPUT / SAVE
+                  DETECTION RESULTS / SAVE
                 </div>
                 <h2 className="nc-modal-title">
                   Save Detection Results
@@ -361,22 +718,50 @@ function SigmaDetection() {
             <form onSubmit={handleSave}>
               <div className="nc-modal-body">
 
-                <div className="nc-field">
-                  <label className="nc-field-label" htmlFor="caseName">
-                    CASE NAME
-                  </label>
-                  <input
-                    id="caseName"
-                    className="nc-input"
-                    type="text"
-                    value={caseName}
-                    onChange={(e) =>
-                      setCaseName(e.target.value)
-                    }
-                    placeholder="Enter case name"
-                    required
-                  />
+                <div className="nc-empty-hint nc-modal-hint">
+                  Saves {result?.matches?.length || 0} matched rule
+                  {result?.matches?.length === 1 ? "" : "s"} as Detections
+                  on the selected case.
                 </div>
+
+                <div className="nc-field">
+                  <label className="nc-field-label" htmlFor="saveCase">
+                    CASE
+                  </label>
+                  <select
+                    id="saveCase"
+                    className="nc-select"
+                    value={selectedCase}
+                    onChange={(e) =>
+                      setSelectedCase(e.target.value)
+                    }
+                    required
+                  >
+                    <option value="">
+                      Select case
+                    </option>
+                    {cases.map((item) => (
+                      <option
+                        key={item.id}
+                        value={item.id}
+                      >
+                        #{String(item.id).padStart(3, "0")} — {item.case_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {saveError && (
+                  <div className="nc-error-banner">
+                    {saveError}
+                  </div>
+                )}
+
+                {saveSuccess && (
+                  <div className="nc-success-banner">
+                    {saveSuccess}
+                  </div>
+                )}
 
               </div>
 
@@ -385,14 +770,16 @@ function SigmaDetection() {
                   type="button"
                   className="nc-btn"
                   onClick={() => setShowSaveForm(false)}
+                  disabled={isSaving}
                 >
                   CANCEL
                 </button>
                 <button
                   type="submit"
                   className="nc-btn nc-btn-primary"
+                  disabled={isSaving}
                 >
-                  SAVE RESULTS
+                  {isSaving ? "SAVING..." : "SAVE RESULTS"}
                 </button>
               </div>
             </form>

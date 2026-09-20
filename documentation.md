@@ -43,8 +43,9 @@ Detection Management
 - Record detection rules
 - Track severity
 - Associate detections with forensic events and investigations
-- Prepare detection data for future Sigma integration
-- Prepare detections for MITRE ATT&CK mapping
+- Detect with Sigma against EVTX evidence files
+- Track severity, detection rule, and rule ID per detection
+- MITRE ATT&CK tactic and technique mapping from rule tags
 Investigation Notes
 - Create investigation notes
 - Update and delete notes
@@ -73,8 +74,8 @@ Authentication	Django Session Authentication
 Web Language	JavaScript
 Backend Language	Python
 Database Language	SQL
-Forensic Analysis	Chainsaw (planned)
-Detection	Sigma (planned)
+Forensic Analysis	Chainsaw (implemented)
+Detection	Sigma (implemented)
 System Architecture
 ┌───────────────────────────────┐
 │           React UI            │
@@ -226,7 +227,9 @@ src/
 │   ├── eventApi.js
 │   ├── detectionApi.js
 │   ├── noteApi.js
-│   └── evidenceApi.js
+│   ├── evidenceApi.js
+│   ├── analyze.js
+│   └── sigmaApi.js
 │
 ├── components/
 ├── layouts/
@@ -240,6 +243,8 @@ API layer modules:
 - detectionApi.js - getDetections(), getDetection(), createDetection(), updateDetection(), deleteDetection()
 - noteApi.js - getNotes(), getNote(), createNote(), updateNote(), deleteNote()
 - evidenceApi.js - getEvidenceFiles(), getEvidenceFile(), createEvidenceFile(), deleteEvidenceFile()
+- analyze.js - analyzeLogs() (Chainsaw)
+- sigmaApi.js - getSigmaMeta(), detectWithSigma()
 Authentication Flow
 NexusCorvus uses Django's session-based authentication:
 FIRST LOGIN
@@ -326,25 +331,28 @@ NexusCorvus Events
      ▼
 Investigation Timeline
 Sigma
-Sigma detection rules will be integrated to identify suspicious activity from supported log data.
-Forensic Events
-      │
-      ▼
-Sigma Rules
-      │
-      ▼
-Detection Engine
-      │
-      ▼
+Sigma detection is integrated as the "Detect with Sigma" engine using Python-native tooling (no subprocesses).
+EVTX File
+     │
+     ▼
+python-evtx Parser (events → normalized dicts)
+     │
+     ▼
+SigmaHQ Windows Rules (bundled under backend/sigma_tool/sigma/rules/windows)
+     │
+     ▼
+pySigma parse + sigma-rule-matcher evaluation
+     │
+     ▼
 Detection Results
-      │
-      ├── Rule ID
-      ├── Severity
-      ├── Description
-      └── MITRE ATT&CK Mapping
-      │
-      ▼
-NexusCorvus Detection
+     │
+     ├── Rule ID
+     ├── Severity
+     ├── Description
+     └── MITRE ATT&CK Mapping
+     │
+     ▼
+NexusCorvus Detection (save to case)
 Development Progress
 Completed
 - Initial frontend architecture
@@ -369,6 +377,10 @@ Completed
 - Detection management API
 - Notes API
 - Evidence API
+- Log Analysis page integration (Chainsaw)
+- Sigma detection endpoint and engine (python-evtx + pySigma + sigma-rule-matcher)
+- Sigma Detection page integration with filters and save-to-case
+- MITRE ATT&CK tactic/technique extraction for Sigma matches
 In Progress
 - Connect frontend pages to API modules
 - Authentication state management
@@ -380,8 +392,6 @@ In Progress
 - Investigation timeline visualization
 Planned
 - Integrate Chainsaw
-- Implement Sigma detection engine
-- MITRE ATT&CK mapping
 - Event correlation
 - Investigation timeline
 - Improve forensic analysis interface
@@ -428,10 +438,24 @@ NexusCorvus/
 │   │   ├── services/
 │   │   │   └── chainsaw_runner.py
 │   │   └── migrations/
+│   ├── sigma_app/               # Sigma detection Django app
+│   │   ├── views.py
+│   │   ├── urls.py
+│   │   ├── serializers.py
+│   │   ├── models.py
+│   │   ├── services/
+│   │   │   ├── evtx_parser.py
+│   │   │   ├── rule_resolver.py
+│   │   │   └── sigma_runner.py
+│   │   └── migrations/
 │   ├── chainsaw_tool/           # Chainsaw binary and Sigma rules
 │   │   └── chainsaw/
 │   │       ├── README.md
 │   │       └── sigma/
+│   ├── sigma_tool/              # SigmaHQ rules repo (sparse: rules/windows only)
+│   │   └── sigma/
+│   │       ├── LICENSE
+│   │       └── rules/windows/
 │   ├── config/                  # Django project config
 │   │   ├── settings.py
 │   │   ├── urls.py
@@ -448,7 +472,9 @@ NexusCorvus/
 │   │   │   ├── eventApi.js
 │   │   │   ├── detectionApi.js
 │   │   │   ├── noteApi.js
-│   │   │   └── evidenceApi.js
+│   │   │   ├── evidenceApi.js
+│   │   │   ├── analyze.js
+│   │   │   └── sigmaApi.js
 │   │   ├── components/
 │   │   ├── layouts/
 │   │   ├── pages/
@@ -1022,7 +1048,102 @@ Error (401):
 {
   "detail": "Authentication required."
 }
-7. Chainsaw Analysis Endpoint (Planned)
+7. Sigma Detection Endpoints
+GET /api/sigma/meta/
+Headers: Session cookie required
+Response (200):
+{
+  "levels": ["informational", "low", "medium", "high", "critical"],
+  "categories": ["builtin", "create_remote_thread", "...", "process_creation", "windows"]
+}
+Error (401):
+{
+  "detail": "Authentication required."
+}
+POST /api/sigma/detect/
+Headers: Session cookie required
+Request Body:
+{
+  "evidence_file_id": 1,
+  "level": "high",
+  "category": "security",
+  "service": null,
+  "rule_files": ["rules/windows/process_creation/proc_creation_win_tool_executable.yml"],
+  "max_events_per_rule": 100,
+  "max_rules": 0
+}
+Notes on filters:
+- evidence_file_id: required (EVTX evidence file owned by the uploader or case owner)
+- level: minimum severity to include (informational | low | medium | high | critical)
+- category: Sigma category, or the Windows rules sub-folder name (e.g. security, process_creation)
+- rule_files: optional explicit subset; each entry is a basename, a full repo path, or a directory prefix
+- max_events_per_rule: cap on matched event rows stored per rule (default 100)
+- max_rules: optional cap on the number of rules evaluated (default 0 = no limit)
+Response (200):
+{
+  "status": "success",
+  "evidence_file_id": 1,
+  "evidence_file_name": "sample.evtx",
+  "events_processed": 101,
+  "events_malformed": 0,
+  "rules_loaded": 1226,
+  "rules_evaluated": 842,
+  "rules_skipped": 384,
+  "duration_seconds": 5.92,
+  "matches": [
+    {
+      "rule": {
+        "title": "RDP over Reverse SSH Tunnel WFP",
+        "id": "f0e2b4d6-...",
+        "level": "high",
+        "status": "stable",
+        "description": "...",
+        "references": ["https://..."],
+        "author": "...",
+        "logsource": { "product": "windows", "category": "network_connection", "service": null },
+        "rule_file": "rules/windows/builtin/security/win_security_rdp_reverse_tunnel.yml",
+        "mitre_tactics": ["Command and Control", "Lateral Movement"],
+        "mitre_techniques": ["T1090.001", "T1021.001"]
+      },
+      "match_count": 4,
+      "truncated": false,
+      "matches": [
+        {
+          "time": "2019-02-13 18:04:58.363695+00:00",
+          "event_id": 5156,
+          "channel": "Security",
+          "computer": "PC01.example.corp",
+          "user": "admin01",
+          "data": { "Event.System.EventID": 5156, "ProcessName": "C:\\\\Windows\\\\System32\\\\svchost.exe" }
+        }
+      ]
+    }
+  ]
+}
+Error (400):
+{
+  "status": "error",
+  "errors": {
+    "evidence_file_id": ["This field is required."],
+    "level": ["\"extreme\" is not a valid choice."],
+    "max_events_per_rule": ["Ensure this value is greater than or equal to 1."]
+  }
+}
+Error (401):
+{
+  "detail": "Authentication required."
+}
+Error (403):
+{
+  "status": "error",
+  "error": "Not authorized to analyze this evidence."
+}
+Error (404):
+{
+  "status": "error",
+  "error": "Evidence file not found."
+}
+8. Chainsaw Analysis Endpoint
 POST /api/chainsaw/analyze/
 Request Body:
 {
@@ -1070,7 +1191,7 @@ Error (401):
 {
   "detail": "Authentication required."
 }
-8. Error Response Format
+9. Error Response Format
 All endpoints return errors in a consistent format:
 {
   "detail": "Error message string"
@@ -1082,7 +1203,7 @@ Validation errors (Chainsaw endpoint):
     "field_name": ["Error message"]
   }
 }
-9. General Notes
+10. General Notes
 - Authentication: All endpoints except /api/auth/csrf/ and /api/auth/login/ require a valid Django session cookie (sessionid).
 - CSRF: State-changing requests (POST, PUT, PATCH, DELETE) require the X-CSRFToken header. The frontend automatically fetches the token via GET /api/auth/csrf/ and reads it from the csrftoken cookie.
 - Content-Type: All requests with bodies must use Content-Type: application/json.
