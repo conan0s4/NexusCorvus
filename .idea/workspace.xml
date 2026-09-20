@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="087c62c6-337b-47f8-b757-588962c1317b" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/backend/config/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/config/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/config/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/config/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/documentation.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.jsx" afterDir="false" />
-    </list>
+    <list default="true" id="087c62c6-337b-47f8-b757-588962c1317b" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
