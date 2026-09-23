@@ -4,7 +4,7 @@ import "./SigmaDetection.css";
 
 import { getEvidenceFiles } from "../../api/evidenceApi.js";
 import { getCases } from "../../api/caseApi.js";
-import { detectWithSigma, getSigmaMeta } from "../../api/sigmaApi.js";
+import { detectWithSigma, getSigmaMeta, stopSigmaDetection } from "../../api/sigmaApi.js";
 import { createDetection } from "../../api/detectionApi.js";
 
 function SigmaDetection() {
@@ -39,6 +39,8 @@ function SigmaDetection() {
   const [result, setResult] = useState(null);
   const [detectionError, setDetectionError] = useState("");
   const [isDetecting, setIsDetecting] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
+  const [stopNotice, setStopNotice] = useState("");
   const [expanded, setExpanded] = useState(new Set());
 
   /* =========================
@@ -108,6 +110,7 @@ function SigmaDetection() {
 
     setResult(null);
     setDetectionError("");
+    setStopNotice("");
   };
 
   const handleClearEvidence = () => {
@@ -115,6 +118,30 @@ function SigmaDetection() {
 
     setResult(null);
     setDetectionError("");
+    setStopNotice("");
+  };
+
+  /* =========================
+     Stop Sigma Detection
+  ========================= */
+
+  const handleStop = async () => {
+    if (!selectedEvidence || !isDetecting) {
+      return;
+    }
+
+    setIsStopping(true);
+    setDetectionError("");
+
+    try {
+      await stopSigmaDetection(selectedEvidence.id);
+    } catch (err) {
+      setDetectionError(
+        err.message || "Failed to stop Sigma detection."
+      );
+    } finally {
+      setIsStopping(false);
+    }
   };
 
   /* =========================
@@ -131,6 +158,7 @@ function SigmaDetection() {
 
     setIsDetecting(true);
     setDetectionError("");
+    setStopNotice("");
     setResult(null);
     setExpanded(new Set());
 
@@ -143,6 +171,12 @@ function SigmaDetection() {
 
       if (data && data.status === "success") {
         setResult(data);
+        if (data.stopped) {
+          setStopNotice(
+            data.detail ||
+              "Scan stopped — showing partial results."
+          );
+        }
       } else {
         setDetectionError(
           data?.error || "Sigma detection failed."
@@ -580,6 +614,17 @@ function SigmaDetection() {
             >
               {isDetecting ? "RUNNING..." : "RUN DETECTION"}
             </button>
+
+            {isDetecting && (
+              <button
+                type="button"
+                className="nc-btn nc-btn-danger"
+                onClick={handleStop}
+                disabled={isStopping}
+              >
+                {isStopping ? "STOPPING..." : "STOP"}
+              </button>
+            )}
           </div>
 
         </div>
@@ -591,6 +636,12 @@ function SigmaDetection() {
         )}
 
       </section>
+
+      {stopNotice && (
+        <div className="nc-success-banner sigma-error-banner">
+          {stopNotice}
+        </div>
+      )}
 
       {/* =========================
           Results

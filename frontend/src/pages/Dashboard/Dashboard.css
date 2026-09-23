@@ -70,6 +70,21 @@
   gap: 12px;
 }
 
+.activity-head,
+.activity-row {
+  grid-template-columns:
+    96px
+    minmax(0, 1fr)
+    minmax(0, 220px)
+    150px;
+}
+
+.col-activity-type {
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+
 .dashboard-list-panel {
   display: flex;
   flex-direction: column;

@@ -12,7 +12,8 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 
 
-from . import crud
+from . import crud, reports
+from .models import Case, Event
 from .serializers import (
     CaseSerializer,
     EventSerializer,
@@ -267,6 +268,61 @@ class CaseDetailView(APIView):
         )
 
 
+class CaseReportView(APIView):
+    """Generate and download a report for a single case.
+
+    The ``report_format`` query parameter selects the output (``json``,
+    ``md`` or ``pdf``). The parameter is deliberately not named ``format``
+    because Django REST Framework reserves that name for renderer suffix
+    negotiation. The document is built from the data already persisted
+    against the requested case and contains nothing outside of it.
+    """
+
+    def get(self, request, case_id):
+
+        if not request.user.is_authenticated:
+            return Response(
+                {'detail': 'Authentication required.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        report_format = (
+            request.query_params.get('report_format', 'json')
+            or 'json'
+        ).lower().strip()
+
+        if report_format not in reports.FORMATS:
+            return Response(
+                {
+                    'detail': (
+                        "Unsupported report format. "
+                        "Use 'json', 'md' or 'pdf'."
+                    )
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            case = crud.get_case(case_id)
+        except Case.DoesNotExist:
+            return Response(
+                {'detail': 'Case not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            return reports.render_case_report(
+                case,
+                report_format,
+                generated_by=request.user.username
+            )
+        except Exception as error:
+            return Response(
+                {'detail': f'Failed to generate report: {error}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
 # ============================================================
 # EVENT API
 # ============================================================
@@ -358,6 +414,52 @@ class EventDetailView(APIView):
         serializer = EventSerializer(event)
 
         return Response(serializer.data)
+
+
+class EventJsonView(APIView):
+    """Serve the raw on-disk JSON content for a saved Event record."""
+
+    def get(self, request, event_id):
+
+        if not request.user.is_authenticated:
+            return Response(
+                {'detail': 'Authentication required.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        try:
+            event = crud.get_event(event_id)
+            content = crud.read_event_file(event)
+        except Event.DoesNotExist:
+            return Response(
+                {'detail': 'Event not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except FileNotFoundError as error:
+            return Response(
+                {'detail': str(error)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except ValueError as error:
+            return Response(
+                {'detail': str(error)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except OSError as error:
+            return Response(
+                {'detail': f"Failed to read event JSON: {error}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            'id': event.id,
+            'case': event.case_id,
+            'file_name': event.file_name,
+            'file_type': event.file_type,
+            'file_size': event.file_size,
+            'created_at': event.created_at,
+            'content': content,
+        })
 
     def delete(self, request, event_id):
 
@@ -525,9 +627,21 @@ class NoteListCreateView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        case = crud.get_case(
-            request.data.get('case_id')
-        )
+        case_id = request.data.get('case_id')
+
+        if not case_id:
+            return Response(
+                {'detail': 'case_id is required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            case = crud.get_case(case_id)
+        except Case.DoesNotExist:
+            return Response(
+                {'detail': 'Case not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         note = crud.create_note(
             case=case,

@@ -22,3 +22,12 @@ export async function analyzeLogs({
         }),
     });
 }
+
+export async function stopChainsawAnalyze(evidence_file_id) {
+    return await apiRequest("/chainsaw/stop/", {
+        method: "POST",
+        body: JSON.stringify({
+            evidence_file_id,
+        }),
+    });
+}

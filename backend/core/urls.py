@@ -10,8 +10,10 @@ from .views import (
 
     CaseListCreateView,
     CaseDetailView,
+    CaseReportView,
     EventListCreateView,
     EventDetailView,
+    EventJsonView,
     DetectionListCreateView,
     DetectionDetailView,
     NoteListCreateView,
@@ -65,11 +67,23 @@ urlpatterns = [
         name='case-detail'
     ),
 
+    path(
+        'cases/<int:case_id>/report/',
+        CaseReportView.as_view(),
+        name='case-report'
+    ),
+
     # EVENT
     path(
         'events/',
         EventListCreateView.as_view(),
         name='event-list-create'
+    ),
+
+    path(
+        'events/<int:event_id>/json/',
+        EventJsonView.as_view(),
+        name='event-json'
     ),
 
     path(

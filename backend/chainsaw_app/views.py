@@ -50,7 +50,20 @@ class ChainsawAnalysisView(APIView):
             )
 
         runner = ChainsawRunner()
-        result = runner.run(evidence_file, data)
+        started = runner.start(
+            evidence_file,
+            data,
+            user_id=request.user.id,
+        )
+
+        if started.get("status") != "started":
+            started.pop("status", None)
+            return Response(
+                started,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        result = runner.wait(started["run_id"])
 
         # Never expose the underlying command (contains filesystem paths).
         result.pop("command", None)
@@ -59,6 +72,9 @@ class ChainsawAnalysisView(APIView):
             result["events"] = self._normalize_events(result.get("output", ""))
             result.pop("output", None)
             result.pop("stderr", None)
+            return Response(result, status=status.HTTP_200_OK)
+
+        if result.get("status") == "stopped":
             return Response(result, status=status.HTTP_200_OK)
 
         return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -77,3 +93,40 @@ class ChainsawAnalysisView(APIView):
         if isinstance(data, dict):
             return [data]
         return []
+
+
+class ChainsawStopView(APIView):
+
+    def post(self, request):
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Authentication required."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        evidence_file_id = request.data.get("evidence_file_id")
+
+        if not evidence_file_id:
+            return Response(
+                {
+                    "status": "error",
+                    "error": "evidence_file_id is required.",
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        run_id = ChainsawRunner.find_active(
+            request.user.id,
+            evidence_file_id
+        )
+
+        if run_id is None:
+            return Response({
+                "status": "ok",
+                "stopped": False,
+                "detail": "No detection is currently running.",
+            })
+
+        result = ChainsawRunner.stop(run_id)
+
+        return Response(result)

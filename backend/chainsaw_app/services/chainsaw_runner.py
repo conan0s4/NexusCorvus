@@ -1,5 +1,13 @@
 import subprocess
+import threading
 from pathlib import Path
+from uuid import uuid4
+
+# Registry of currently running Chainsaw processes, keyed by run id so a
+# stop request handled in another thread can locate and terminate a process
+# instead of leaving it orphaned. Entries are removed once the process ends.
+_ACTIVE = {}
+_ACTIVE_LOCK = threading.Lock()
 
 
 class ChainsawRunner:
@@ -18,7 +26,22 @@ class ChainsawRunner:
 
         self.evidence_dir = Path(settings.EVIDENCE_ROOT)
 
-    def run(self, evidence_file, data):
+    def run(self, evidence_file, data, user_id=None):
+        """Synchronous convenience wrapper kept for compatibility."""
+        started = self.start(evidence_file, data, user_id=user_id)
+
+        if started.get("status") != "started":
+            return started
+
+        return self.wait(started["run_id"])
+
+    def start(self, evidence_file, data, user_id=None):
+        """Resolve the evidence + build the command, then launch Chainsaw.
+
+        Launches the subprocess without blocking so a Stop request can
+        reach the running process. Returns ``{"status": "started",
+        "run_id": ...}`` or an error dict when validation fails.
+        """
         try:
             evidence_path = self._resolve_evidence_path(evidence_file)
             command = self._build_command(evidence_path, data)
@@ -29,46 +52,155 @@ class ChainsawRunner:
             }
 
         try:
-            result = subprocess.run(
+            process = subprocess.Popen(
                 command,
-                capture_output=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
                 text=True,
                 shell=False,
-                timeout=300,
             )
-
-            if result.returncode != 0:
-                return {
-                    "status": "error",
-                    "error": result.stderr.strip()
-                    or "Chainsaw execution failed.",
-                    "returncode": result.returncode,
-                }
-
-            return {
-                "status": "success",
-                "output": result.stdout,
-                "stderr": result.stderr,
-                "command": command,
-            }
-
-        except subprocess.TimeoutExpired:
-            return {
-                "status": "error",
-                "error": "Chainsaw analysis timed out."
-            }
-
         except FileNotFoundError:
             return {
                 "status": "error",
                 "error": "Chainsaw executable was not found."
             }
-
         except Exception as exc:
             return {
                 "status": "error",
-                "error": str(exc)
+                "error": str(exc),
             }
+
+        run_id = uuid4().hex
+
+        entry = {
+            "process": process,
+            "stopped": False,
+            "user_id": user_id,
+            "evidence_file_id": (
+                evidence_file.id if evidence_file is not None else None
+            ),
+            "command": command,
+        }
+
+        with _ACTIVE_LOCK:
+            _ACTIVE[run_id] = entry
+
+        return {
+            "status": "started",
+            "run_id": run_id,
+        }
+
+    def wait(self, run_id, timeout=300):
+        """Block until the launched process finishes (or is stopped)."""
+        with _ACTIVE_LOCK:
+            entry = _ACTIVE.get(run_id)
+
+        if entry is None:
+            return {
+                "status": "error",
+                "error": "Analysis is no longer running."
+            }
+
+        process = entry["process"]
+        timed_out = False
+
+        try:
+            stdout, stderr = process.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            timed_out = True
+            process.kill()
+            stdout, stderr = process.communicate()
+        except Exception as exc:
+            with _ACTIVE_LOCK:
+                _ACTIVE.pop(run_id, None)
+            return {
+                "status": "error",
+                "error": str(exc),
+            }
+
+        with _ACTIVE_LOCK:
+            was_stopped = entry.get("stopped", False)
+            _ACTIVE.pop(run_id, None)
+
+        if was_stopped:
+            return {
+                "status": "stopped",
+                "returncode": process.returncode,
+                "detail": "Analysis was stopped.",
+            }
+
+        if timed_out:
+            return {
+                "status": "error",
+                "error": "Chainsaw analysis timed out."
+            }
+
+        if process.returncode != 0:
+            return {
+                "status": "error",
+                "error": stderr.strip()
+                or "Chainsaw execution failed.",
+                "returncode": process.returncode,
+            }
+
+        return {
+            "status": "success",
+            "output": stdout,
+            "stderr": stderr,
+            "command": entry.get("command"),
+        }
+
+    @classmethod
+    def find_active(cls, user_id, evidence_file_id):
+        """Return the run id of the active process for a user+evidence."""
+        with _ACTIVE_LOCK:
+            for run_id, entry in _ACTIVE.items():
+                if (
+                    entry.get("user_id") == user_id
+                    and entry.get("evidence_file_id") == evidence_file_id
+                ):
+                    return run_id
+        return None
+
+    @classmethod
+    def stop(cls, run_id):
+        """Terminate the running process for ``run_id`` when still active."""
+        with _ACTIVE_LOCK:
+            entry = _ACTIVE.get(run_id)
+
+        if entry is None:
+            return {
+                "status": "ok",
+                "stopped": False,
+                "detail": "No active analysis for this run."
+            }
+
+        process = entry["process"]
+
+        if process.poll() is not None:
+            with _ACTIVE_LOCK:
+                _ACTIVE.pop(run_id, None)
+            return {
+                "status": "ok",
+                "stopped": False,
+                "detail": "Analysis already completed."
+            }
+
+        entry["stopped"] = True
+        process.terminate()
+
+        # Give the process a moment to exit before forcing a kill.
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=5)
+
+        return {
+            "status": "ok",
+            "stopped": True,
+            "detail": "Analysis stopped."
+        }
 
     def _has_filter(self, data):
         """True when the caller supplied at least one search constraint."""

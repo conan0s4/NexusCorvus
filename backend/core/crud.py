@@ -173,6 +173,46 @@ def delete_event(event_id):
     event.delete()
 
 
+MAX_EVENT_CONTENT_BYTES = 25 * 1024 * 1024
+
+
+def read_event_file(event):
+    """Return the on-disk Event JSON content as text.
+
+    Mirrors ``_delete_physical_event_file``: the stored path is relative
+    to EVENT_ROOT, we re-derive the absolute path, verify it stays inside
+    EVENT_ROOT, and guard against oversized files so viewing a record can
+    never exhaust server memory.
+    """
+    if not event.file_path:
+        raise ValueError("Event record has no file path.")
+
+    event_root = Path(settings.EVENT_ROOT).resolve()
+    candidate = (event_root / event.file_path).resolve()
+
+    try:
+        candidate.relative_to(event_root)
+    except ValueError:
+        raise ValueError(
+            f"Event file path escapes EVENT_ROOT: {event.file_path}"
+        ) from None
+
+    if not candidate.exists():
+        raise FileNotFoundError(
+            f"Event file is missing from disk: {event.file_path}"
+        )
+
+    if candidate.is_dir():
+        raise ValueError(
+            f"Event path is not a file: {event.file_path}"
+        )
+
+    if candidate.stat().st_size > MAX_EVENT_CONTENT_BYTES:
+        raise ValueError("Event file is too large to view inline.")
+
+    return candidate.read_text(encoding="utf-8", errors="replace")
+
+
 def _delete_physical_event_file(event):
     """Delete the on-disk Event JSON referenced by this row.
 

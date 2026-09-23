@@ -26,3 +26,12 @@ export async function detectWithSigma({
         }),
     });
 }
+
+export async function stopSigmaDetection(evidence_file_id) {
+    return await apiRequest("/sigma/stop/", {
+        method: "POST",
+        body: JSON.stringify({
+            evidence_file_id,
+        }),
+    });
+}

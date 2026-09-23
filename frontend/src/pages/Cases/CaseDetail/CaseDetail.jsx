@@ -7,6 +7,7 @@ import {
   getCase,
   updateCase,
   deleteCase,
+  downloadCaseReport,
 } from "../../../api/caseApi";
 
 import {
@@ -17,12 +18,46 @@ import {
   getEvents,
 } from "../../../api/eventApi";
 
+import EventJsonViewer from "../../../components/EventJsonViewer/EventJsonViewer";
+
 import {
   getNotes,
   createNote,
   updateNote,
   deleteNote,
 } from "../../../api/noteApi";
+
+
+const REPORT_FORMATS = [
+  {
+    value: "pdf",
+    label: "PDF",
+    hint: "Portable document",
+  },
+  {
+    value: "md",
+    label: "Markdown",
+    hint: "Text document (.md)",
+  },
+  {
+    value: "json",
+    label: "JSON",
+    hint: "Structured data (.json)",
+  },
+];
+
+
+function parseDispositionFilename(disposition) {
+  const match = disposition.match(
+    /filename="([^"]+)"|filename=([^;\s]+)/i
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  return match[1] || match[2];
+}
 
 
 function CaseDetail() {
@@ -40,7 +75,13 @@ function CaseDetail() {
   const [showEdit, setShowEdit] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportFormat, setReportFormat] = useState("pdf");
+  const [reportGenerating, setReportGenerating] = useState(false);
+  const [reportError, setReportError] = useState("");
+
   const [selectedDetection, setSelectedDetection] = useState(null);
+  const [viewingEvent, setViewingEvent] = useState(null);
 
   const [detectionSearch, setDetectionSearch] = useState("");
   const [eventSearch, setEventSearch] = useState("");
@@ -359,6 +400,69 @@ function CaseDetail() {
 
   /*
    * =========================================
+   * CASE REPORT
+   * =========================================
+   */
+
+  const buildFallbackFilename = (reportFormatValue) => {
+    const extension =
+      reportFormatValue === "md" ? "md" : reportFormatValue;
+    const id = String(caseData?.id ?? "000").padStart(3, "0");
+    const slug = String(caseData?.case_name || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    return `CASE-${id}${slug ? `_${slug}` : ""}_report.${extension}`;
+  };
+
+
+  const handleGenerateReport = async () => {
+    try {
+      setReportGenerating(true);
+      setReportError("");
+
+      const result = await downloadCaseReport(
+        caseId,
+        reportFormat
+      );
+
+      if (!result) {
+        return;
+      }
+
+      const filename =
+        parseDispositionFilename(result.disposition) ||
+        buildFallbackFilename(reportFormat);
+
+      const url = URL.createObjectURL(result.blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      URL.revokeObjectURL(url);
+
+      setShowReportModal(false);
+
+    } catch (err) {
+      console.error(err);
+
+      setReportError(
+        err.message ||
+        "Failed to generate report."
+      );
+    } finally {
+      setReportGenerating(false);
+    }
+  };
+
+
+  /*
+   * =========================================
    * NOTES
    * =========================================
    */
@@ -374,7 +478,7 @@ function CaseDetail() {
       setError("");
 
       const newNote = await createNote({
-        case: Number(caseId),
+        case_id: Number(caseId),
         content: noteContent.trim(),
       });
 
@@ -548,6 +652,13 @@ function CaseDetail() {
         </div>
 
         <div className="page-header-actions">
+          <button
+            className="nc-btn nc-btn-primary"
+            onClick={() => setShowReportModal(true)}
+          >
+            GENERATE REPORT
+          </button>
+
           <button
             className="nc-btn"
             onClick={() => setShowEdit(true)}
@@ -791,6 +902,7 @@ function CaseDetail() {
             <div className="col-path">LOCATION</div>
             <div className="col-size">SIZE</div>
             <div className="col-time">ADDED</div>
+            <div className="col-action">STATUS</div>
           </div>
 
           {filteredEvents.length === 0 ? (
@@ -827,6 +939,19 @@ function CaseDetail() {
                 </div>
                 <div className="col-time mono dim">
                   {formatDate(event.created_at)}
+                </div>
+                <div className="col-action">
+                  <div className="row-actions">
+                    <span className="nc-badge plain">
+                      SAVED
+                    </span>
+                    <button
+                      className="nc-btn nc-btn-sm"
+                      onClick={() => setViewingEvent(event)}
+                    >
+                      VIEW JSON
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -1071,6 +1196,113 @@ function CaseDetail() {
       )}
 
       {/* =========================================
+          GENERATE REPORT MODAL
+          ========================================= */}
+
+      {showReportModal && (
+        <div
+          className="nc-modal-overlay"
+          onClick={() => setShowReportModal(false)}
+        >
+          <div
+            className="nc-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="nc-modal-header">
+              <div>
+                <div className="nc-modal-eyebrow">
+                  CASE EXPORT
+                </div>
+                <h2 className="nc-modal-title">
+                  Generate Report
+                </h2>
+              </div>
+              <button
+                className="nc-modal-close"
+                onClick={() => setShowReportModal(false)}
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="nc-modal-body">
+
+              {reportError && (
+                <div className="nc-error-banner">
+                  {reportError}
+                </div>
+              )}
+
+              <p className="nc-modal-text">
+                Generate a report containing the evidence, events,
+                detections, notes and investigation metadata for{" "}
+                <strong>{caseData.case_name}</strong>.
+              </p>
+
+              <div className="nc-field">
+                <label className="nc-field-label" htmlFor="report-format">
+                  REPORT FORMAT
+                </label>
+
+                <div className="report-format-grid" id="report-format">
+                  {REPORT_FORMATS.map((format) => (
+                    <button
+                      type="button"
+                      key={format.value}
+                      className={
+                        "report-format-option" +
+                        (reportFormat === format.value
+                          ? " selected"
+                          : "")
+                      }
+                      onClick={() =>
+                        setReportFormat(format.value)
+                      }
+                    >
+                      <span className="report-format-name">
+                        {format.label}
+                      </span>
+                      <span className="report-format-hint">
+                        {format.hint}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            <div className="nc-modal-footer">
+              <span className="report-footer-hint mono dim">
+                CASE-{String(caseData.id).padStart(3, "0")}
+                {" · "}
+                {events.length + detections.length + notes.length}
+                {" "}ARTIFACTS
+              </span>
+
+              <button
+                className="nc-btn"
+                onClick={() => setShowReportModal(false)}
+                disabled={reportGenerating}
+              >
+                CANCEL
+              </button>
+
+              <button
+                className="nc-btn nc-btn-primary"
+                onClick={handleGenerateReport}
+                disabled={reportGenerating}
+              >
+                {reportGenerating
+                  ? "GENERATING..."
+                  : "GENERATE REPORT"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================
           EDIT CASE MODAL
           ========================================= */}
 
@@ -1228,6 +1460,17 @@ function CaseDetail() {
             </div>
           </div>
         </div>
+      )}
+
+    {/* =========================================
+          EVENT JSON VIEWER
+          ========================================= */}
+
+      {viewingEvent && (
+        <EventJsonViewer
+          event={viewingEvent}
+          onClose={() => setViewingEvent(null)}
+        />
       )}
 
     </div>

@@ -31,3 +31,7 @@ export async function deleteEvent(eventId) {
         method: "DELETE",
     });
 }
+
+export async function getEventContent(eventId) {
+    return apiRequest(`/events/${eventId}/json/`);
+}

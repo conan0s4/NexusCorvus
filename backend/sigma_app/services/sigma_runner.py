@@ -32,7 +32,7 @@ class SigmaRunner:
     def __init__(self, resolver=None):
         self.resolver = resolver or SigmaRuleResolver()
 
-    def run(self, evidence_file, data):
+    def run(self, evidence_file, data, stop_event=None):
         try:
             evidence_path = self._resolve_evidence_path(evidence_file)
         except (FileNotFoundError, ValueError) as exc:
@@ -68,8 +68,16 @@ class SigmaRunner:
 
         parser = EvtxParser(evidence_path)
         events_processed = 0
+        stopped = False
 
         for event in parser.events():
+            # Cooperative cancellation: the stop endpoint sets an
+            # event; we bail out before the next event so the partial
+            # (already-gathered) results can be returned.
+            if stop_event is not None and stop_event.is_set():
+                stopped = True
+                break
+
             events_processed += 1
             for record in active:
                 if not record["active"]:
@@ -99,6 +107,11 @@ class SigmaRunner:
 
         return {
             "status": "success",
+            "stopped": stopped,
+            "detail": (
+                "Scan was stopped. Results are partial."
+                if stopped else None
+            ),
             "evidence_file_id": evidence_file.id,
             "evidence_file_name": evidence_file.file_name,
             "events_processed": events_processed,

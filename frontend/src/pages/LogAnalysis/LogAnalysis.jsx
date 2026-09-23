@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "./LogAnalysis.css";
 import { useNavigate } from "react-router-dom";
 
-import { analyzeLogs } from "../../api/analyze.js";
+import { analyzeLogs, stopChainsawAnalyze } from "../../api/analyze.js";
 import {
   getEvidenceFiles,
   createEvidenceFile,
@@ -40,7 +40,9 @@ function LogAnalysis() {
 
   const [events, setEvents] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   /* =========================
      Save Analysis Results
@@ -97,6 +99,7 @@ function LogAnalysis() {
     setSelectedEvidence(file);
     setEvents([]);
     setError("");
+    setNotice("");
   };
 
   /* =========================
@@ -181,6 +184,7 @@ function LogAnalysis() {
 
     setIsAnalyzing(true);
     setError("");
+    setNotice("");
     setEvents([]);
 
     try {
@@ -199,6 +203,8 @@ function LogAnalysis() {
         if (!data.events || data.events.length === 0) {
           setError("Chainsaw returned no matching events.");
         }
+      } else if (data.status === "stopped") {
+        setNotice(data.detail || "Chainsaw analysis was stopped.");
       } else {
         setError(
           data.error ||
@@ -212,6 +218,29 @@ function LogAnalysis() {
       );
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  /* =========================
+     Stop Chainsaw Analysis
+  ========================= */
+
+  const handleStop = async () => {
+    if (!selectedEvidence || !isAnalyzing) {
+      return;
+    }
+
+    setIsStopping(true);
+    setError("");
+
+    try {
+      await stopChainsawAnalyze(selectedEvidence.id);
+    } catch (err) {
+      setError(
+        err.message || "Failed to stop the running analysis."
+      );
+    } finally {
+      setIsStopping(false);
     }
   };
 
@@ -584,6 +613,7 @@ function LogAnalysis() {
               <input
                 type="checkbox"
                 checked={ignoreCase}
+                disabled={isAnalyzing}
                 onChange={(e) =>
                   setIgnoreCase(e.target.checked)
                 }
@@ -591,13 +621,25 @@ function LogAnalysis() {
               <span>IGNORE CASE</span>
             </label>
 
-            <button
-              className="nc-btn nc-btn-primary"
-              onClick={handleAnalyze}
-              disabled={isAnalyzing || !selectedEvidence}
-            >
-              {isAnalyzing ? "ANALYZING..." : "ANALYZE LOGS"}
-            </button>
+            <div className="analysis-actions">
+              <button
+                className="nc-btn nc-btn-primary"
+                onClick={handleAnalyze}
+                disabled={isAnalyzing || !selectedEvidence}
+              >
+                {isAnalyzing ? "ANALYZING..." : "ANALYZE LOGS"}
+              </button>
+
+              {isAnalyzing && (
+                <button
+                  className="nc-btn nc-btn-danger"
+                  onClick={handleStop}
+                  disabled={isStopping}
+                >
+                  {isStopping ? "STOPPING..." : "STOP"}
+                </button>
+              )}
+            </div>
 
           </div>
 
@@ -610,6 +652,12 @@ function LogAnalysis() {
       {error && (
         <div className="nc-error-banner analysis-error">
           {error}
+        </div>
+      )}
+
+      {notice && (
+        <div className="nc-success-banner analysis-error">
+          {notice}
         </div>
       )}
 

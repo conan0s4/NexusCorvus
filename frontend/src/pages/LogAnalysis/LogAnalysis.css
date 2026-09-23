@@ -134,6 +134,13 @@
   cursor: pointer;
 }
 
+.analysis-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .analysis-error {
   margin-bottom: 2px;
 }

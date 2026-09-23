@@ -50,6 +50,16 @@ const formatFileSize = (bytes) => {
 const severityClass = (severity) =>
   String(severity || "").trim().toLowerCase();
 
+const activityBadgeClass = (kind) => {
+  if (kind === "case") {
+    return "nc-badge info";
+  }
+  if (kind === "event") {
+    return "nc-badge warn";
+  }
+  return "nc-badge";
+};
+
 function Dashboard() {
   const navigate = useNavigate();
 
@@ -121,46 +131,61 @@ function Dashboard() {
     };
   }, [cases, evidence, events, detections]);
 
-  const recentCases = useMemo(() => {
-    return [...cases]
-      .sort((a, b) => {
-        const aTime = new Date(a.updated_at || a.created_at || 0).getTime();
-        const bTime = new Date(b.updated_at || b.created_at || 0).getTime();
-        return bTime - aTime;
-      })
-      .slice(0, 6);
-  }, [cases]);
+  const recentActivities = useMemo(() => {
+    const activities = [];
 
-  const recentEvidence = useMemo(() => {
-    return [...evidence]
-      .sort((a, b) => {
-        const aTime = new Date(a.uploaded_at || a.created_at || 0).getTime();
-        const bTime = new Date(b.uploaded_at || b.created_at || 0).getTime();
-        return bTime - aTime;
+    cases.forEach((item) =>
+      activities.push({
+        key: `case-${item.id}`,
+        kind: "case",
+        name: item.case_name || `Case #${item.id}`,
+        status: item.status || "—",
+        caseId: String(item.id),
+        caseName: "",
+        time: new Date(item.updated_at || item.created_at || 0).getTime(),
       })
-      .slice(0, 6);
-  }, [evidence]);
-
-  const recentEvents = useMemo(() => {
-    return [...events]
-      .sort((a, b) => {
-        const aTime = new Date(a.created_at || 0).getTime();
-        const bTime = new Date(b.created_at || 0).getTime();
-        return bTime - aTime;
-      })
-      .slice(0, 6);
-  }, [events]);
-
-  const openCaseIds = useMemo(() => {
-    const activeStatuses = ["open", "investigating", "reviewing"];
-    return new Set(
-      cases
-        .filter((item) =>
-          activeStatuses.includes(String(item.status || "").toLowerCase())
-        )
-        .map((item) => String(item.id))
     );
-  }, [cases]);
+
+    evidence.forEach((item) => {
+      const caseId = String(item.case ?? item.case_id ?? "");
+      activities.push({
+        key: `evidence-${item.id}`,
+        kind: "evidence",
+        name: item.file_name || `Evidence #${item.id}`,
+        status: "",
+        caseId,
+        caseName: caseNameById.get(caseId)?.case_name || "",
+        time: new Date(item.uploaded_at || item.created_at || 0).getTime(),
+      });
+    });
+
+    events.forEach((item) => {
+      const caseId = String(item.case ?? item.case_id ?? "");
+      activities.push({
+        key: `event-${item.id}`,
+        kind: "event",
+        name: item.file_name || `Event #${item.id}`,
+        status: "",
+        caseId,
+        caseName: caseNameById.get(caseId)?.case_name || "",
+        time: new Date(item.created_at || 0).getTime(),
+      });
+    });
+
+    return activities
+      .sort((a, b) => b.time - a.time)
+      .slice(0, 12);
+  }, [cases, evidence, events, caseNameById]);
+
+  const handleActivityOpen = (activity) => {
+    if (activity.kind === "case") {
+      navigate(`/cases/${activity.caseId}`);
+    } else if (activity.kind === "event") {
+      navigate("/events");
+    } else {
+      navigate("/evidence");
+    }
+  };
 
   return (
     <div className="dashboard-page">
@@ -256,226 +281,88 @@ function Dashboard() {
 
           </section>
 
-          <section className="dashboard-grid">
-
-            <div className="nc-panel dashboard-list-panel">
-
-              <div className="panel-header">
-                <div>
-                  <div className="panel-eyebrow">
-                    WORKSPACE / CASES
-                  </div>
-                  <h2 className="panel-title">
-                    RECENT INVESTIGATIONS
-                  </h2>
-                </div>
-                <button
-                  className="nc-btn nc-btn-sm"
-                  onClick={() => navigate("/cases")}
-                >
-                  VIEW ALL
-                </button>
-              </div>
-
-              {recentCases.length === 0 ? (
-                <div className="nc-empty">
-                  <div className="nc-empty-title">
-                    No cases exist yet
-                  </div>
-                  <div className="nc-empty-hint">
-                    Create an investigation case to begin organizing
-                    evidence, events, and findings.
-                  </div>
-                </div>
-              ) : (
-                <div className="artifact-table">
-                  <div className="artifact-row artifact-head">
-                    <div>ID</div>
-                    <div>NAME</div>
-                    <div className="col-status">STATUS</div>
-                    <div className="col-time">UPDATED</div>
-                  </div>
-
-                  {recentCases.map((item) => (
-                    <div
-                      key={item.id}
-                      className="artifact-row artifact-item"
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => navigate(`/cases/${item.id}`)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          navigate(`/cases/${item.id}`);
-                        }
-                      }}
-                    >
-                      <div className="mono dim">
-                        #{String(item.id).padStart(3, "0")}
-                      </div>
-                      <div className="row-name">
-                        {item.case_name}
-                      </div>
-                      <div className="col-status">
-                        <span className={
-                          openCaseIds.has(String(item.id))
-                            ? "nc-badge info"
-                            : String(item.status || "").toLowerCase() === "closed"
-                              ? "nc-badge"
-                              : "nc-badge warn"
-                        }>
-                          {item.status || "—"}
-                        </span>
-                      </div>
-                      <div className="col-time mono dim">
-                        {formatDate(item.updated_at || item.created_at)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-            </div>
-
-            <div className="nc-panel dashboard-list-panel">
-
-              <div className="panel-header">
-                <div>
-                  <div className="panel-eyebrow">
-                    ARTIFACTS / EVIDENCE
-                  </div>
-                  <h2 className="panel-title">
-                    RECENT EVIDENCE
-                  </h2>
-                </div>
-                <button
-                  className="nc-btn nc-btn-sm"
-                  onClick={() => navigate("/evidence")}
-                >
-                  VIEW ALL
-                </button>
-              </div>
-
-              {recentEvidence.length === 0 ? (
-                <div className="nc-empty">
-                  <div className="nc-empty-title">
-                    No evidence files registered
-                  </div>
-                  <div className="nc-empty-hint">
-                    Upload forensic artifacts (EVTX, memory images, disk
-                    images) and associate them with a case.
-                  </div>
-                </div>
-              ) : (
-                <div className="artifact-table">
-                  <div className="artifact-row artifact-head">
-                    <div>FILE</div>
-                    <div>TYPE</div>
-                    <div className="col-size">SIZE</div>
-                    <div className="col-case">CASE</div>
-                  </div>
-
-                  {recentEvidence.map((item) => (
-                    <div className="artifact-row artifact-item" key={item.id}>
-                      <div className="row-name mono">
-                        {item.file_name || "—"}
-                      </div>
-                      <div>
-                        <span className="file-type">
-                          {item.file_type ||
-                            String(item.file_name || "")
-                              .split(".")
-                              .pop()
-                              .toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="col-size mono dim">
-                        {formatFileSize(item.file_size)}
-                      </div>
-                      <div className="col-case mono dim">
-                        #{String(item.case || item.case_id || "?").padStart(3, "0")}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-            </div>
-
-          </section>
-
           <section className="nc-panel dashboard-list-panel">
 
             <div className="panel-header">
               <div>
                 <div className="panel-eyebrow">
-                  ARTIFACTS / EVENTS
+                  WORKSPACE / ACTIVITY
                 </div>
                 <h2 className="panel-title">
-                  RECENT EVENTS
+                  RECENT ACTIVITIES
                 </h2>
               </div>
               <button
                 className="nc-btn nc-btn-sm"
-                onClick={() => navigate("/events")}
+                onClick={() => navigate("/cases")}
               >
                 VIEW ALL
               </button>
             </div>
 
-            {recentEvents.length === 0 ? (
+            {recentActivities.length === 0 ? (
               <div className="nc-empty">
                 <div className="nc-empty-title">
-                  No saved events
+                  No recent workspace activity
                 </div>
                 <div className="nc-empty-hint">
-                  Run ChainSaw Log Analysis against an EVTX artifact and
-                  save the resulting event to a case.
+                  Cases, evidence, and saved event records will appear here
+                  as your investigation workspace grows.
                 </div>
               </div>
             ) : (
               <div className="artifact-table">
-                <div className="artifact-row artifact-head">
-                  <div>FILE</div>
+
+                <div className="artifact-row artifact-head activity-head">
                   <div>TYPE</div>
-                  <div className="col-size">SIZE</div>
+                  <div>NAME</div>
                   <div className="col-case">CASE</div>
-                  <div className="col-time">CREATED</div>
+                  <div className="col-time">WHEN</div>
                 </div>
 
-                {recentEvents.map((item) => {
-                  const caseId =
-                    String(item.case || item.case_id || "");
-                  const caseRef = caseNameById.get(caseId);
-
-                  return (
-                    <div className="artifact-row artifact-item" key={item.id}>
-                      <div className="row-name mono">
-                        {item.file_name || "—"}
-                      </div>
-                      <div>
-                        <span className="file-type">
-                          {item.file_type || "JSON"}
-                        </span>
-                      </div>
-                      <div className="col-size mono dim">
-                        {formatFileSize(item.file_size)}
-                      </div>
-                      <div className="col-case">
-                        <span className="case-ref-dim">
-                          #{String(caseId || "?").padStart(3, "0")}
-                        </span>
-                        {caseRef && (
-                          <span className="case-ref-name">
-                            {caseRef.case_name}
-                          </span>
-                        )}
-                      </div>
-                      <div className="col-time mono dim">
-                        {formatDate(item.created_at)}
-                      </div>
+                {recentActivities.map((activity) => (
+                  <div
+                    key={activity.key}
+                    className="artifact-row artifact-item activity-row"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => handleActivityOpen(activity)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        handleActivityOpen(activity);
+                      }
+                    }}
+                  >
+                    <div className="col-activity-type">
+                      <span className={activityBadgeClass(activity.kind)}>
+                        {activity.kind}
+                      </span>
                     </div>
-                  );
-                })}
+                    <div className="row-name">
+                      {activity.name}
+                    </div>
+                    <div className="col-case">
+                      {activity.caseId ? (
+                        <>
+                          <span className="case-ref-dim">
+                            #{String(activity.caseId).padStart(3, "0")}
+                          </span>
+                          {activity.caseName && (
+                            <span className="case-ref-name">
+                              {activity.caseName}
+                            </span>
+                          )}
+                        </>
+                      ) : (
+                        <span className="dim">—</span>
+                      )}
+                    </div>
+                    <div className="col-time mono dim">
+                      {formatDate(new Date(activity.time))}
+                    </div>
+                  </div>
+                ))}
+
               </div>
             )}
 

@@ -3,3 +3,6 @@ pysigma==1.5.0
 sigma-rule-matcher==0.1.0
 python-evtx==0.8.1
 pyyaml==6.0.3
+
+# Case report generation ("Generate Report")
+reportlab==5.0.1

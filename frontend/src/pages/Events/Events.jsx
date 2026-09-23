@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Events.css";
 import apiRequest from "../../api/apiClient";
 import { getEvents, deleteEvent } from "../../api/eventApi";
+import EventJsonViewer from "../../components/EventJsonViewer/EventJsonViewer";
 
 const extractList = (response) => {
   if (Array.isArray(response)) {
@@ -69,6 +70,7 @@ function Events() {
 
   const [pendingDelete, setPendingDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [viewingEvent, setViewingEvent] = useState(null);
 
   useEffect(() => {
     const loadAll = async () => {
@@ -261,6 +263,12 @@ function Events() {
                         SAVED
                       </span>
                       <button
+                        className="nc-btn nc-btn-sm"
+                        onClick={() => setViewingEvent(item)}
+                      >
+                        VIEW JSON
+                      </button>
+                      <button
                         className="nc-btn nc-btn-sm nc-btn-danger"
                         onClick={() => setPendingDelete(item)}
                       >
@@ -327,6 +335,13 @@ function Events() {
             </div>
           </div>
         </div>
+      )}
+
+    {viewingEvent && (
+        <EventJsonViewer
+          event={viewingEvent}
+          onClose={() => setViewingEvent(null)}
+        />
       )}
 
     </div>

@@ -109,4 +109,29 @@ async function apiRequest(endpoint, options = {}) {
     return data;
 }
 
+/*
+ * Raw fetch variant for endpoints that return something other than
+ * JSON (file downloads, blob content, etc.). Reuses the same base URL,
+ * CSRF protection and cookie credentials as apiRequest.
+ */
+export async function apiRawFetch(endpoint, options = {}) {
+    const method = (options.method || "GET").toUpperCase();
+
+    const headers = {
+        ...options.headers,
+    };
+
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+        const csrfToken = await ensureCsrfToken();
+
+        headers["X-CSRFToken"] = csrfToken;
+    }
+
+    return fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers,
+        credentials: "include",
+    });
+}
+
 export default apiRequest;

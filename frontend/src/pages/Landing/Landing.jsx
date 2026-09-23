@@ -54,10 +54,7 @@ function Landing() {
 
           <div className="hero-content">
 
-            <div className="hero-label">
-              DIGITAL FORENSICS / INCIDENT RESPONSE
-            </div>
-
+  
             <h1>
               Investigate.
               <br />
