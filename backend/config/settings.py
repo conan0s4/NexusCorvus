@@ -10,24 +10,46 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+import os
+
 from pathlib import Path
+
+
+def _env_bool(name, default):
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "on")
+
+
+def _env_list(name, default):
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return [item.strip() for item in value.split(",") if item.strip()]
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-EVIDENCE_ROOT = BASE_DIR / "Evidence"
-EVENT_ROOT = BASE_DIR / "Event"
-SIGMA_RULES_ROOT = BASE_DIR / "sigma_tool" / "sigma"
+EVIDENCE_ROOT = Path(os.environ.get("EVIDENCE_ROOT") or (BASE_DIR / "Evidence"))
+EVENT_ROOT = Path(os.environ.get("EVENT_ROOT") or (BASE_DIR / "Event"))
+SIGMA_RULES_ROOT = Path(
+    os.environ.get("SIGMA_RULES_ROOT") or (BASE_DIR / "sigma_tool" / "sigma")
+)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#6xxsqfo2d0e6_oh#ulxdwig1k(^+go0ka%rr18dq72j=saa5='
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-#6xxsqfo2d0e6_oh#ulxdwig1k(^+go0ka%rr18dq72j=saa5=",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = _env_bool("DJANGO_DEBUG", True)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = _env_list("DJANGO_ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 
 
 # Application definition
@@ -87,11 +109,11 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "nexuscorvus",
-        "USER": "valorian",
-        "PASSWORD": "A123b456cRTc",
-        "HOST": "localhost",
-        "PORT": "3301",
+        "NAME": os.environ.get("DB_NAME", "nexuscorvus"),
+        "USER": os.environ.get("DB_USER", "valorian"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", "A123b456cRTc"),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "3301"),
     }
 }
 
@@ -142,12 +164,14 @@ MAILERS = {
     },
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
+CORS_ALLOWED_ORIGINS = _env_list(
+    "CORS_ALLOWED_ORIGINS",
+    ["http://localhost:5173"],
+)
 
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",
-]
+CSRF_TRUSTED_ORIGINS = _env_list(
+    "CSRF_TRUSTED_ORIGINS",
+    ["http://localhost:5173"],
+)

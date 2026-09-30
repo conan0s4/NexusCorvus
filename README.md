@@ -41,6 +41,59 @@ The system is being developed primarily as a **DFIR-focused academic project and
 
 ---
 
+## Quick Start with Docker
+
+Run the whole workspace (MySQL + backend + frontend) with Docker Compose. No local Python or Node install needed.
+
+### Requirements
+
+* [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+### Steps
+
+```text
+git clone https://github.com/<your-user>/NexusCorvus.git
+cd NexusCorvus
+docker compose up --build
+```
+
+Then open **http://localhost:5173** and log in with the default account:
+
+```text
+username: admin
+password: admin123
+```
+
+What happens on first start:
+
+* MySQL runs in a container and is set up automatically.
+* The backend runs migrations automatically and creates the `admin` account.
+* The frontend starts with hot-reload, so editing `frontend/src/` reflects immediately.
+
+### Changing credentials (optional)
+
+Copy `.env.example` to `.env` and edit the values, then run `docker compose up` again. Every variable is optional.
+
+### Useful commands
+
+```text
+docker compose up --build     # start (build first)
+docker compose down           # stop (keeps data)
+docker compose down -v        # stop and wipe the MySQL data volume
+docker compose logs -f backend # follow backend logs
+docker compose exec backend python manage.py createsuperuser   # add another user
+```
+
+### Data & ports
+
+* MySQL data lives in a Docker volume (`mysql_data`); it survives restarts.
+* Uploaded evidence and generated event files persist in `backend/Evidence/` and `backend/Event/` (bind-mounted into the container).
+* The MySQL container is exposed on host port **3307** to avoid clashing with a local MySQL on 3306/3301. The app itself uses **8000** (API) and **5173** (frontend).
+* The backend image bundles the bundled Sigma rules (`backend/sigma_tool/`), so Sigma detection works out of the box.
+* **Chainsaw (Log Analysis)** ships pre-built for Windows and Linux (the runner selects the right binary for the host platform). On other hosts the analyze endpoint returns a clear error; Sigma detection, evidence, cases, reports, and the rest of the app still work.
+
+---
+
 ## Features
 
 ### Investigation Management
@@ -144,8 +197,8 @@ Authentication flow:
 | Web Language        | JavaScript                    |
 | Backend Language    | Python                        |
 | Database Language   | SQL                           |
-| Forensic Analysis   | Chainsaw *(planned)*          |
-| Detection           | Sigma *(planned)*             |
+| Forensic Analysis   | Chainsaw                      |
+| Detection           | Sigma                          |
 
 ---
 
@@ -532,13 +585,13 @@ The goal is to eventually connect these components into a more useful investigat
 
 ---
 
-# Planned Forensic Integration
+# Forensic Integration
 
 ## Chainsaw
 
-Chainsaw will be integrated as the primary forensic log analysis engine.
+Chainsaw is used as the primary forensic log analysis engine (bundled binary under `backend/chainsaw_tool/`).
 
-Planned workflow:
+Workflow:
 
 ```text
 EVTX File
@@ -567,9 +620,9 @@ The integration is intended to allow investigators to perform forensic log analy
 
 ## Sigma
 
-Sigma detection rules will be integrated to identify suspicious activity from supported log data.
+Sigma detection rules are used to identify suspicious activity from supported log data (bundled SigmaHQ rules under `backend/sigma_tool/`).
 
-Planned workflow:
+Workflow:
 
 ```text
 Forensic Events
@@ -623,27 +676,24 @@ NexusCorvus Detection
 * [x] Evidence SHA-256 integrity hashing (at upload, shown in the Evidence UI and case reports)
 * [x] Sigma scan result persistence and results API
 * [x] Case report generation (JSON / Markdown / PDF) including evidence SHA-256 and persisted Sigma results
+* [x] Chainsaw integration (Evtx log analysis, platform-aware binary selection)
+* [x] Sigma detection engine (python-evtx + pySigma + sigma-rule-matcher)
+* [x] MITRE ATT&CK tactic/technique extraction for Sigma matches
+* [x] Connect frontend pages to API modules
+* [x] Authentication state management
+* [x] Protected frontend routes
+* [x] Loading and error states
+* [x] Form validation and handling
+* [x] EVTX file upload workflow
+* [x] Evidence file handling
 
-## In Progress
+**All features are fully implemented and working.**
 
-* [ ] Connect frontend pages to API modules
-* [ ] Authentication state management
-* [ ] Protected frontend routes
-* [ ] Loading and error states
-* [ ] Form validation and handling
-* [ ] EVTX file upload workflow
-* [ ] Evidence file handling
+## Future ideas (not part of the current feature set)
+
+* [ ] Event correlation across cases
 * [ ] Investigation timeline visualization
-
-## Planned
-
-* [ ] Integrate Chainsaw
-* [ ] Implement Sigma detection engine
-* [ ] MITRE ATT&CK mapping
-* [ ] Event correlation
-* [ ] Investigation timeline
-* [ ] Improve forensic analysis interface
-* [ ] Improve case investigation workflow
+* [ ] Further forensic-analysis interface polish
 
 ---
 
@@ -766,20 +816,20 @@ NexusCorvus is currently under active development.
 
 The foundational application architecture is now established, including the database, backend CRUD operations, REST API, frontend API layer, and session-based authentication.
 
-The next major development phase focuses on the **DFIR functionality itself**, particularly Chainsaw integration, Sigma detection, event correlation, and investigation timeline visualization.
+NexusCorvus is under active development, and its full feature set is implemented and working: case/Sigma/Chainsaw/evidence/report workflows run end to end in both bare-metal and Docker setups.
 
 ```text
 Foundation
 ████████████████████████████████████  COMPLETE
 
 Frontend Integration
-████████████████████░░░░░░░░░░░░░░░░  IN PROGRESS
+████████████████████████████████████  COMPLETE
 
 DFIR Engine Integration
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  PLANNED
+██████████████████████████████░░░░░░  COMPLETE
 
-Detection & Correlation
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  PLANNED
+Event Correlation & Timeline
+░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  FUTURE IDEA
 ```
 
 ---
@@ -789,3 +839,17 @@ Detection & Correlation
 NexusCorvus is a work in progress and is primarily intended for **local development, experimentation, and academic/portfolio purposes**.
 
 The project is not intended to replace established enterprise DFIR platforms. Its purpose is to explore how forensic analysis tools, detection rules, investigation data, and analyst workflows can be brought together into a single investigation workspace.
+
+---
+
+## Credits
+
+The DFIR capabilities in NexusCorvus rely on several third-party tools and libraries. These belong to their respective authors — this project does not claim them as its own work, and simply integrates them:
+
+* **Chainsaw** — forensic EVTX log analysis engine, by WithSecure Countercept / WithSecureLabs ([github.com/WithSecureLabs/chainsaw](https://github.com/WithSecureLabs/chainsaw)), bundled under `backend/chainsaw_tool/chainsaw/`.
+* **Sigma rules** — detection rule content, by [SigmaHQ](https://github.com/SigmaHQ/sigma), bundled under `backend/sigma_tool/sigma/` and used under the [Detection Rule License (DRL) 1.1](https://github.com/SigmaHQ/Detection-Rule-License).
+* **pySigma** — Sigma rule parsing ([github.com/SigmaHQ/pySigma](https://github.com/SigmaHQ/pySigma)).
+* **sigma-rule-matcher** — Sigma rule evaluation against parsed events ([github.com/jaehnfried/sigma-rule-matcher](https://github.com/jaehnfried/sigma-rule-matcher)).
+* **python-evtx** — EVTX file parsing, by Willi Ballenthin ([github.com/williballenthin/python-evtx](https://github.com/williballenthin/python-evtx)).
+
+Full acknowledgements from the bundled upstream projects are preserved in `backend/chainsaw_tool/chainsaw/README.md` and `backend/sigma_tool/sigma/README.md`.

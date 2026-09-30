@@ -1,0 +1,9 @@
+node_modules
+dist
+Dist
+*.log
+.git
+.gitignore
+.idea
+.venv
+.DS_Store

@@ -1,3 +1,4 @@
+import platform
 import subprocess
 import threading
 from pathlib import Path
@@ -17,12 +18,15 @@ class ChainsawRunner:
 
         self.backend_dir = Path(__file__).resolve().parents[2]
 
-        self.chainsaw_path = (
-            self.backend_dir
-            / "chainsaw_tool"
-            / "chainsaw"
-            / "chainsaw.exe"
-        )
+        # Chainsaw ships per-platform binaries. Inside the repo we keep the
+        # Windows build (chainsaw.exe); other platforms are expected to
+        # supply their own build (e.g. a Linux ELF named `chainsaw`) next to
+        # it. Never fall back to a foreign (.exe) binary on a non-Windows
+        # host - running a Windows PE on Linux fails with a confusing
+        # exec/WSL error.
+        tool_dir = self.backend_dir / "chainsaw_tool" / "chainsaw"
+        exe_name = "chainsaw.exe" if platform.system() == "Windows" else "chainsaw"
+        self.chainsaw_path = tool_dir / exe_name
 
         self.evidence_dir = Path(settings.EVIDENCE_ROOT)
 
@@ -49,6 +53,15 @@ class ChainsawRunner:
             return {
                 "status": "error",
                 "error": str(exc),
+            }
+
+        # Validate the resolved binary *before* spawning so a missing or
+        # foreign (Windows PE on Linux) executable degrades into a clear
+        # message instead of a raw exec/WSL error.
+        if not self._binary_ready():
+            return {
+                "status": "error",
+                "error": self._binary_error_message(),
             }
 
         try:
@@ -201,6 +214,45 @@ class ChainsawRunner:
             "stopped": True,
             "detail": "Analysis stopped."
         }
+
+    def _binary_ready(self):
+        """True only when the resolved binary exists and is not a Windows
+        PE being run on a non-Windows platform."""
+        if not self.chainsaw_path.exists():
+            return False
+        if platform.system() == "Windows":
+            return True
+        return not self._is_windows_pe(self.chainsaw_path)
+
+    def _binary_error_message(self):
+        tool_dir = self.backend_dir / "chainsaw_tool" / "chainsaw"
+        windows_exe = tool_dir / "chainsaw.exe"
+
+        if self.chainsaw_path.exists() and self._is_windows_pe(self.chainsaw_path):
+            return (
+                "Chainsaw cannot run on this platform. The bundled binary "
+                "in chainsaw_tool/chainsaw/ is Windows-only (chainsaw.exe). "
+                "Place the platform-native 'chainsaw' binary (e.g. the Linux "
+                "build from https://github.com/WithSecureLabs/chainsaw/releases) "
+                "next to it and try again."
+            )
+
+        expected = (
+            "chainsaw.exe" if platform.system() == "Windows" else "chainsaw"
+        )
+        return (
+            f"Chainsaw executable was not found: {self.chainsaw_path}. "
+            f"Add the platform-native '{expected}' binary to "
+            f"{windows_exe.parent}/ and try again."
+        )
+
+    @staticmethod
+    def _is_windows_pe(path):
+        try:
+            with open(path, "rb") as handle:
+                return handle.read(2) == b"MZ"
+        except OSError:
+            return False
 
     def _has_filter(self, data):
         """True when the caller supplied at least one search constraint."""

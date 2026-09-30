@@ -1,0 +1,17 @@
+# Virtual env / Python cache
+.venv
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Local artifact folders (bind-mounted from the host in docker-compose)
+Event/
+
+# VCS and editor files
+.git
+.gitignore
+.idea
+
+# Docker files (keep context clean; the image copies the app via COPY . .)
+Dockerfile
+.dockerignore
