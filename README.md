@@ -812,11 +812,7 @@ NexusCorvus/
 
 # Project Status
 
-NexusCorvus is currently under active development.
-
-The foundational application architecture is now established, including the database, backend CRUD operations, REST API, frontend API layer, and session-based authentication.
-
-NexusCorvus is under active development, and its full feature set is implemented and working: case/Sigma/Chainsaw/evidence/report workflows run end to end in both bare-metal and Docker setups.
+NexusCorvus is fully built. The foundational architecture — database, backend CRUD operations, REST API, frontend API layer, and session-based authentication — is complete, and the entire feature set works end to end in both bare-metal and Docker setups: case management, evidence upload with SHA-256, Chainsaw log analysis, Sigma detection, detections, notes, and report generation.
 
 ```text
 Foundation
@@ -826,7 +822,7 @@ Frontend Integration
 ████████████████████████████████████  COMPLETE
 
 DFIR Engine Integration
-██████████████████████████████░░░░░░  COMPLETE
+████████████████████████████████████  COMPLETE
 
 Event Correlation & Timeline
 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  FUTURE IDEA
@@ -836,7 +832,7 @@ Event Correlation & Timeline
 
 ## Note
 
-NexusCorvus is a work in progress and is primarily intended for **local development, experimentation, and academic/portfolio purposes**.
+NexusCorvus is primarily intended for **local development, experimentation, and academic/portfolio purposes**.
 
 The project is not intended to replace established enterprise DFIR platforms. Its purpose is to explore how forensic analysis tools, detection rules, investigation data, and analyst workflows can be brought together into a single investigation workspace.
 

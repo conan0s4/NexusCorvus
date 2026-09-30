@@ -540,7 +540,7 @@ The full feature set is implemented and working:
 
 Future ideas (not part of the current feature set): event correlation across cases, investigation timeline visualization, further interface polish.
 Note
-NexusCorvus is a work in progress intended for local development, experimentation, and academic/portfolio purposes. It is not intended to replace established enterprise DFIR platforms. Its purpose is to explore how forensic analysis tools, detection rules, investigation data, and analyst workflows can be brought together into a single investigation workspace.
+NexusCorvus is fully built and primarily intended for local development, experimentation, and academic/portfolio purposes. It is not intended to replace established enterprise DFIR platforms. Its purpose is to explore how forensic analysis tools, detection rules, investigation data, and analyst workflows can be brought together into a single investigation workspace.
 
 
 
