@@ -80,6 +80,32 @@ function Evidence() {
   const [pendingDelete, setPendingDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
+  const [copiedId, setCopiedId] = useState(null);
+
+  const copyHash = async (item) => {
+    const hash = item.sha256;
+
+    if (!hash) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(hash);
+    } catch {
+      const textArea = document.createElement("textarea");
+      textArea.value = hash;
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+    }
+
+    setCopiedId(item.id);
+    setTimeout(() => setCopiedId((current) => (current === item.id ? null : current)), 1600);
+  };
+
   useEffect(() => {
     const loadAll = async () => {
       try {
@@ -116,7 +142,8 @@ function Evidence() {
       const matchesSearch =
         !query ||
         String(item.file_name || "").toLowerCase().includes(query) ||
-        String(item.file_path || "").toLowerCase().includes(query);
+        String(item.file_path || "").toLowerCase().includes(query) ||
+        String(item.sha256 || "").toLowerCase().includes(query);
 
       const matchesCase =
         caseFilter === "All" ||
@@ -253,6 +280,7 @@ function Evidence() {
             <div className="col-case">CASE</div>
             <div className="col-time">UPLOADED</div>
             <div className="col-path">STORAGE PATH</div>
+            <div className="col-hash">SHA-256</div>
             <div className="col-action">STATUS</div>
           </div>
 
@@ -309,6 +337,27 @@ function Evidence() {
                   </div>
                   <div className="col-path mono dim">
                     {item.file_path || "—"}
+                  </div>
+                  <div className="col-hash">
+                    {item.sha256 ? (
+                      <div className="hash-cell">
+                        <span
+                          className="hash-short mono"
+                          title={item.sha256}
+                        >
+                          {item.sha256.slice(0, 12)}…
+                        </span>
+                        <button
+                          className="copy-hash"
+                          onClick={() => copyHash(item)}
+                          title="Copy full SHA-256"
+                        >
+                          {copiedId === item.id ? "COPIED" : "COPY"}
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="dim">—</span>
+                    )}
                   </div>
                   <div className="col-action">
                     <div className="row-actions">

@@ -217,6 +217,13 @@ GET     /api/evidence/
 POST    /api/evidence/
 GET     /api/evidence/<id>/
 DELETE  /api/evidence/<id>/
+Sigma Detection
+POST    /api/sigma/detect/
+GET     /api/sigma/meta/
+GET     /api/sigma/results/
+GET     /api/sigma/results/<id>/
+Case Report
+GET     /api/cases/<id>/report/?report_format=json|md|pdf
 Frontend Architecture
 src/
 │
@@ -353,6 +360,8 @@ Detection Results
      │
      ▼
 NexusCorvus Detection (save to case)
+
+Successful scans are persisted as SigmaDetectionResult rows (the verbatim run output, including matched rules and events) and can be retrieved later via /api/sigma/results/ and /api/sigma/results/{id}/. Reports include these persisted results.
 Development Progress
 Completed
 - Initial frontend architecture
@@ -381,6 +390,9 @@ Completed
 - Sigma detection endpoint and engine (python-evtx + pySigma + sigma-rule-matcher)
 - Sigma Detection page integration with filters and save-to-case
 - MITRE ATT&CK tactic/technique extraction for Sigma matches
+- Sigma scan result persistence and results API (GET /api/sigma/results/[/id])
+- Evidence SHA-256 integrity hashing (computed at upload, stored, shown in UI and reports)
+- Case report generation (JSON / Markdown / PDF) with evidence SHA-256 and persisted Sigma results
 In Progress
 - Connect frontend pages to API modules
 - Authentication state management
@@ -981,6 +993,7 @@ Model Fields (JSON shape)
   "file_type": "string",
   "file_path": "string",
   "file_size": 123456,
+  "sha256": "a3a1f8e9...64-char-sha-256-hex-digest",
   "uploaded_at": "2024-01-01T00:00:00Z"
 }
 GET /api/evidence/
@@ -1020,8 +1033,12 @@ Response (201):
   "file_type": "string",
   "file_path": "string",
   "file_size": 123456,
+  "sha256": "a3a1f8e9...64-char-sha-256-hex-digest",
   "uploaded_at": "2024-01-01T00:00:00Z"
 }
+Notes:
+- sha256: computed server-side from the actual file bytes while the evidence is written to disk; clients never supply it. It is an integrity fingerprint for the registered artifact.
+- Duplicate uploads (same storage path) are rejected with an error.
 Error (401):
 {
   "detail": "Authentication required."
@@ -1036,6 +1053,7 @@ Response (200):
   "file_type": "string",
   "file_path": "string",
   "file_size": 123456,
+  "sha256": "a3a1f8e9...64-char-sha-256-hex-digest",
   "uploaded_at": "2024-01-01T00:00:00Z"
 }
 Error (401):
@@ -1143,7 +1161,68 @@ Error (404):
   "status": "error",
   "error": "Evidence file not found."
 }
-8. Chainsaw Analysis Endpoint
+GET /api/sigma/results/
+Headers: Session cookie required
+Optional query parameters: evidence_file_id, case_id
+Response (200): list of persisted scan runs (newest first). Each entry wraps the stored run data:
+{
+  "id": 1,
+  "case": 1,
+  "evidence_file": 13,
+  "created_by": 1,
+  "created_at": "2024-01-01T00:00:00Z",
+  "run_data": {
+    "status": "success",
+    "evidence_file_id": 13,
+    "evidence_file_name": "sample.evtx",
+    "events_processed": 101,
+    "rules_evaluated": 842,
+    "matches": []
+  }
+}
+Notes:
+- A successful POST /api/sigma/detect/ persists the full run result (scan summary + matched rules/events) before the response is returned.
+- Only results the caller is allowed to see (evidence uploader or case owner) are returned.
+Error (401):
+{
+  "detail": "Authentication required."
+}
+GET /api/sigma/results/{id}/
+Response (200): a single persisted scan run in the same shape as above.
+Error (401):
+{
+  "detail": "Authentication required."
+}
+Error (403):
+{
+  "status": "error",
+  "error": "Not authorized to view this result."
+}
+Error (404):
+{
+  "status": "error",
+  "error": "Sigma result not found."
+}
+8. Case Report Endpoint
+Generates and downloads an investigation report for a single case in JSON, Markdown, or PDF format.
+GET /api/cases/{case_id}/report/?report_format=json
+Headers: Session cookie required
+report_format: json | md | pdf (default json)
+Response (200): attachment download
+The report contains, for the selected case:
+- Case metadata and investigation status plus artifact counts (evidence files, events, detections, notes, sigma runs)
+- Evidence records, each including its metadata and the SHA-256 integrity hash
+- Events, detections, notes
+- Sigma Detection Results: the actual persisted Sigma scan output (scan summary, matched rules, and matched events per rule) - not just database metadata
+Error (401):
+{
+  "detail": "Authentication required."
+}
+Error (400):
+{
+  "detail": "Unsupported report format."
+}
+9. Chainsaw Analysis Endpoint
 POST /api/chainsaw/analyze/
 Request Body:
 {
@@ -1191,7 +1270,7 @@ Error (401):
 {
   "detail": "Authentication required."
 }
-9. Error Response Format
+10. Error Response Format
 All endpoints return errors in a consistent format:
 {
   "detail": "Error message string"
@@ -1203,7 +1282,7 @@ Validation errors (Chainsaw endpoint):
     "field_name": ["Error message"]
   }
 }
-10. General Notes
+11. General Notes
 - Authentication: All endpoints except /api/auth/csrf/ and /api/auth/login/ require a valid Django session cookie (sessionid).
 - CSRF: State-changing requests (POST, PUT, PATCH, DELETE) require the X-CSRFToken header. The frontend automatically fetches the token via GET /api/auth/csrf/ and reads it from the csrftoken cookie.
 - Content-Type: All requests with bodies must use Content-Type: application/json.

@@ -3,12 +3,15 @@ import threading
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Q
 
 from core.models import EvidenceFile
 
+from .models import SigmaDetectionResult
 from .serializers import (
     LEVELS,
     SigmaDetectionRequestSerializer,
+    SigmaDetectionResultSerializer,
 )
 from .services.rule_resolver import SigmaRuleResolver
 from .services.sigma_runner import SigmaRunner
@@ -82,6 +85,12 @@ class SigmaDetectView(APIView):
                 _ACTIVE_SIGMA.pop(key, None)
 
         if result.get("status") == "success":
+            SigmaDetectionResult.objects.create(
+                case=evidence_file.case,
+                evidence_file=evidence_file,
+                created_by=request.user,
+                run_data=result,
+            )
             return Response(result, status=status.HTTP_200_OK)
 
         return Response(result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -145,3 +154,77 @@ class SigmaMetaView(APIView):
             "levels": LEVELS,
             "categories": resolver.categories(),
         })
+
+
+class SigmaResultsListView(APIView):
+    """List persisted Sigma scan results.
+
+    Optional ``evidence_file_id`` / ``case_id`` query parameters narrow the
+    listing. Only results the requesting user is allowed to see (uploader of
+    the evidence or owner of the case) are returned.
+    """
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Authentication required."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        results = SigmaDetectionResult.objects.select_related(
+            "case", "evidence_file", "created_by"
+        ).order_by("-created_at")
+
+        evidence_file_id = request.query_params.get("evidence_file_id")
+        if evidence_file_id:
+            results = results.filter(evidence_file_id=evidence_file_id)
+
+        case_id = request.query_params.get("case_id")
+        if case_id:
+            results = results.filter(case_id=case_id)
+
+        results = results.filter(
+            Q(created_by_id=request.user.id)
+            | Q(case__created_by_id=request.user.id)
+        )
+
+        serializer = SigmaDetectionResultSerializer(results, many=True)
+
+        return Response(serializer.data)
+
+
+class SigmaResultsDetailView(APIView):
+    """Retrieve a single persisted Sigma scan result."""
+
+    def get(self, request, result_id):
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Authentication required."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            result = SigmaDetectionResult.objects.select_related(
+                "case", "evidence_file", "created_by"
+            ).get(id=result_id)
+        except SigmaDetectionResult.DoesNotExist:
+            return Response(
+                {"status": "error", "error": "Sigma result not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if (
+            result.created_by_id != request.user.id
+            and result.case.created_by_id != request.user.id
+        ):
+            return Response(
+                {
+                    "status": "error",
+                    "error": "Not authorized to view this result.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = SigmaDetectionResultSerializer(result)
+
+        return Response(serializer.data)

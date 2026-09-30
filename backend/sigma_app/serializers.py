@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from .models import SigmaDetectionResult
+
 LEVELS = ("informational", "low", "medium", "high", "critical")
 
 
@@ -74,3 +76,24 @@ class SigmaDetectionRequestSerializer(serializers.Serializer):
             return None
         value = value.strip()
         return value or None
+
+
+class SigmaDetectionResultSerializer(serializers.ModelSerializer):
+    """Serialized access to a persisted Sigma scan run.
+
+    The stored ``run_data`` is the verbatim result produced by
+    :class:`sigma_app.services.sigma_runner.SigmaRunner` (scan summary plus
+    actual matched rules and matched events).
+    """
+
+    class Meta:
+        model = SigmaDetectionResult
+        fields = [
+            "id",
+            "case",
+            "evidence_file",
+            "created_by",
+            "created_at",
+            "run_data",
+        ]
+        read_only_fields = fields

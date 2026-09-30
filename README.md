@@ -58,6 +58,7 @@ The system is being developed primarily as a **DFIR-focused academic project and
 * Associate evidence files with investigation cases
 * Track the user who uploaded evidence
 * Track file type, size, path, and upload time
+* Compute and store a SHA-256 integrity hash for every uploaded artifact (verifiable in the UI and in case reports)
 
 ### Event Management
 
@@ -336,6 +337,30 @@ GET     /api/evidence/<id>/
 DELETE  /api/evidence/<id>/
 ```
 
+Each evidence record includes `sha256` - the integrity hash computed from the file bytes at upload time.
+
+## Sigma
+
+```text
+POST    /api/sigma/detect/
+
+GET     /api/sigma/meta/
+GET     /api/sigma/results/
+GET     /api/sigma/results/<id>/
+```
+
+Successful scans are persisted, so the actual matched rules and events can be
+reviewed later and are included in case reports.
+
+## Case Reports
+
+```text
+GET     /api/cases/<id>/report/?report_format=json|md|pdf
+```
+
+Reports contain case metadata and counts, evidence records (with SHA-256),
+events, detections, notes, and the persisted Sigma detection results.
+
 ---
 
 # Frontend Architecture
@@ -595,6 +620,9 @@ NexusCorvus Detection
 * [x] Detection management API
 * [x] Notes API
 * [x] Evidence API
+* [x] Evidence SHA-256 integrity hashing (at upload, shown in the Evidence UI and case reports)
+* [x] Sigma scan result persistence and results API
+* [x] Case report generation (JSON / Markdown / PDF) including evidence SHA-256 and persisted Sigma results
 
 ## In Progress
 

@@ -3,35 +3,17 @@
   <component name="ChangeListManager">
     <list default="true" id="087c62c6-337b-47f8-b757-588962c1317b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Event/case_4/NTLM2SelfRelay-med0x2e-security_4624_4688.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Evidence/case_4/Windows_Logs.evtx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Evidence/case_4/dicovery_4661_net_group_domain_admins_target.evtx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/Evidence/case_4/x.evtx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/chainsaw_app/services/chainsaw_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/chainsaw_app/services/chainsaw_runner.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/chainsaw_app/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/chainsaw_app/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/chainsaw_app/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/chainsaw_app/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/core/crud.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/crud.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/core/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/sigma_app/services/sigma_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sigma_app/services/sigma_runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/core/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/core/reports.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/core/reports.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sigma_app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sigma_app/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/sigma_app/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sigma_app/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/sigma_app/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sigma_app/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/sigma_app/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/sigma_app/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/analyze.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/analyze.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/apiclient.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/apiclient.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/caseApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/caseApi.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/eventApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/eventApi.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/sigmaApi.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/sigmaApi.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Cases/CaseDetail/CaseDetail.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboard/Dashboard.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboard/Dashboard.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Dashboard/Dashboard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Dashboard/Dashboard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Events/Events.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Events/Events.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Landing/Landing.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Landing/Landing.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/LogAnalysis/LogAnalysis.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/LogAnalysis/LogAnalysis.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/LogAnalysis/LogAnalysis.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/LogAnalysis/LogAnalysis.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/SigmaDetection/SigmaDetection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Evidence/Evidence.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Evidence/Evidence.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/pages/Evidence/Evidence.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/Evidence/Evidence.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

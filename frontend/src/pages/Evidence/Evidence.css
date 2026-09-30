@@ -45,6 +45,7 @@
     1.2fr
     0.9fr
     minmax(140px, 1.4fr)
+    minmax(130px, 1.1fr)
     auto;
   padding: 0 14px;
 }
@@ -78,6 +79,37 @@
   text-decoration: underline;
 }
 
+.hash-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.hash-short {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.copy-hash {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.copy-hash:hover {
+  color: var(--accent-bright);
+  border-color: var(--accent);
+}
+
 @media (max-width: 1000px) {
   .evidence-table {
     overflow-x: auto;
@@ -85,6 +117,6 @@
 
   .evidence-head,
   .evidence-row {
-    min-width: 940px;
+    min-width: 1060px;
   }
 }

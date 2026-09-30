@@ -1,3 +1,4 @@
+import hashlib
 import shutil
 from .models import Case, Event, Detection, Note, EvidenceFile
 from pathlib import Path
@@ -386,13 +387,16 @@ def create_evidence_file(
             f"Evidence file already exists: {file_name}"
         )
 
-    # Save uploaded file in chunks. If anything fails after this point
-    # the transaction rolls back the DB row; we also remove the partial
-    # file so we never leave orphans behind.
+    # Save uploaded file in chunks. The SHA-256 is computed from the exact
+    # bytes written to disk (the actual file contents), never from filename,
+    # path, size or any other metadata.
+    digest = hashlib.sha256()
+
     try:
         with open(file_path, "wb+") as destination:
             for chunk in uploaded_file.chunks():
                 destination.write(chunk)
+                digest.update(chunk)
     except Exception:
         try:
             file_path.unlink()
@@ -411,7 +415,8 @@ def create_evidence_file(
                     settings.EVIDENCE_ROOT
                 )
             ),
-            file_size=uploaded_file.size
+            file_size=uploaded_file.size,
+            sha256=digest.hexdigest(),
         )
     except Exception:
         try:

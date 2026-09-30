@@ -83,6 +83,15 @@ class EvidenceFile(models.Model):
     file_type = models.CharField(max_length=50)
     file_path = models.CharField(max_length=500)
     file_size = models.BigIntegerField()
+    sha256 = models.CharField(
+        max_length=64,
+        blank=True,
+        default="",
+        help_text=(
+            "Hex SHA-256 digest of the original evidence file contents. "
+            "Empty when the hash has not been computed."
+        ),
+    )
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
