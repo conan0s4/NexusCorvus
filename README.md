@@ -4,7 +4,7 @@
 
 NexusCorvus is a self-hosted, local web workspace for digital forensic investigations and security event analysis. Register case evidence, analyze EVTX logs with Chainsaw, run Sigma-based detection, record events and detections, and export investigation reports — all from a single authenticated web UI.
 
-- **Fully built and working** — no "work in progress" features
+- **Fully built and working** 
 - **Docker-first** — run the whole stack with one command
 - **Bundled engines** — Chainsaw (Windows + Linux) and SigmaHQ rules ship with the project
 
